@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#3446E0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>PasoTAI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Lexend:wght@400;500;600&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: columna única centrada tipo app (móvil primero); en escritorio la navegación pasa a un lateral. */
+  --bg:#F2F4FA; --surface:#FFFFFF; --ink:#18203A; --muted:#5E6785; --line:#DCE1EE;
+  --accent:#3446E0; --accent-d:#2333B0; --accent-soft:#E4E8FF;
+  --ok:#139A5B; --ok-d:#0E7845; --ok-soft:#DDF6E8;
+  --ko:#D93D45; --ko-d:#A82A31; --ko-soft:#FDE3E4;
+  --warn:#F2A10C; --flame:#FF7A1A;
+  --b1:#3446E0; --b2:#8A3FD9; --b3:#E5762A; --b4:#109C93;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Lexend", "Segoe UI", system-ui, sans-serif;
+  --fs:17px;
+  --r:16px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10131F; --surface:#1A1F31; --ink:#EEF0F8; --muted:#9AA3C0; --line:#2C3350;
+    --accent:#6F7DFF; --accent-d:#4352D6; --accent-soft:#252C55;
+    --ok:#3CCB84; --ok-d:#22955C; --ok-soft:#173A2A;
+    --ko:#FF6B72; --ko-d:#C2414A; --ko-soft:#43212A;
+    --b1:#6F7DFF; --b2:#B17BFF; --b3:#FF9A55; --b4:#3CCFC4;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10131F; --surface:#1A1F31; --ink:#EEF0F8; --muted:#9AA3C0; --line:#2C3350;
+  --accent:#6F7DFF; --accent-d:#4352D6; --accent-soft:#252C55;
+  --ok:#3CCB84; --ok-d:#22955C; --ok-soft:#173A2A;
+  --ko:#FF6B72; --ko-d:#C2414A; --ko-soft:#43212A;
+  --b1:#6F7DFF; --b2:#B17BFF; --b3:#FF9A55; --b4:#3CCFC4;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var(--fs);line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom)}
+body.f-atk{--body:"Atkinson Hyperlegible", system-ui, sans-serif}
+body.f-sys{--body:system-ui, -apple-system, "Segoe UI", sans-serif}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:.85em}
+
+/* ---------- Shell ---------- */
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:calc(8px + env(safe-area-inset-top)) 16px 8px}
+.top-in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.brand{font-family:var(--display);font-weight:800;font-size:1.25rem;letter-spacing:-.02em;margin-right:auto;display:flex;align-items:center;gap:8px}
+.brand b{color:var(--accent)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-weight:600;padding:5px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:.9rem;white-space:nowrap}
+.chip svg{width:18px;height:18px}
+.chip.flame{color:var(--flame)}
+.chip.off{opacity:.55}
+.chip.timer{border-color:var(--accent);color:var(--accent)}
+main{max-width:640px;margin:0 auto;padding:16px 16px 110px}
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+.nav button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.72rem;font-weight:600;color:var(--muted);padding:6px 8px;border-radius:12px;min-width:62px}
+.nav button svg{width:26px;height:26px}
+.nav button[aria-current="page"]{color:var(--accent);background:var(--accent-soft)}
+@media (min-width:900px){
+  .nav{top:0;bottom:0;right:auto;width:200px;flex-direction:column;justify-content:flex-start;gap:6px;border-top:0;border-right:1px solid var(--line);padding:84px 12px 12px}
+  .nav button{flex-direction:row;font-size:.95rem;gap:12px;padding:10px 14px;justify-content:flex-start}
+  .top{padding-left:216px}
+  main{padding-bottom:40px}
+  body.in-lesson .top{padding-left:16px}
+}
+body.in-lesson .nav,body.in-lesson .top{display:none}
+body.in-lesson main{padding-top:calc(12px + env(safe-area-inset-top));padding-bottom:0}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:14px;padding:14px 20px;font-weight:600;font-size:1rem;letter-spacing:.01em;background:var(--accent);color:#fff;box-shadow:0 4px 0 var(--accent-d);transition:transform .06s,box-shadow .06s;text-transform:uppercase;min-height:52px}
+.btn:active{transform:translateY(4px);box-shadow:0 0 0 var(--accent-d)}
+.btn[disabled]{background:var(--line);color:var(--muted);box-shadow:0 4px 0 color-mix(in srgb,var(--line) 70%,#000 10%);cursor:not-allowed}
+.btn.block{width:100%}
+.btn.ghost{background:var(--surface);color:var(--accent);box-shadow:0 4px 0 var(--line);border:2px solid var(--line)}
+.btn.okb{background:var(--ok);box-shadow:0 4px 0 var(--ok-d)}
+.btn.kob{background:var(--ko);box-shadow:0 4px 0 var(--ko-d)}
+.btn.sm{min-height:40px;padding:8px 14px;font-size:.85rem}
+.link{background:none;border:0;color:var(--accent);font-weight:600;padding:6px;text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- Cards ---------- */
+.card{background:var(--surface);border:2px solid var(--line);border-radius:var(--r);padding:18px}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hero{background:var(--accent);color:#fff;border:0;border-radius:20px;padding:20px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;box-shadow:0 5px 0 var(--accent-d)}
+.hero h2{font-size:1.45rem}
+.hero p{margin:4px 0 0;opacity:.9;font-size:.95rem}
+.hero .btn{background:#fff;color:var(--accent-d);box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.hero .acts{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap}
+.hero .link{color:#fff}
+.goal{display:flex;align-items:center;gap:14px}
+.ring{--p:0;width:56px;height:56px;border-radius:50%;background:conic-gradient(var(--warn) calc(var(--p)*1%),var(--line) 0);display:grid;place-items:center;flex:none}
+.ring span{width:42px;height:42px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-weight:600;font-size:.8rem}
+.bar{height:12px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .35s}
+
+/* ---------- Path ---------- */
+.block-head{border-radius:var(--r);padding:14px 16px;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}
+.block-head h3{font-size:1.05rem}
+.block-head small{opacity:.9;font-weight:500}
+.path{display:flex;flex-direction:column;align-items:center;gap:18px;padding:22px 0 8px}
+.node{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;padding:0}
+.node .disc{--p:0;width:78px;height:78px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--warn) calc(var(--p)*1%),var(--line) 0);}
+.node .face{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;color:#fff;font-family:var(--display);font-weight:800;font-size:1.05rem;box-shadow:0 5px 0 rgba(0,0,0,.22);transition:transform .08s;letter-spacing:-.02em}
+.node:active .face{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.22)}
+.node .lbl{font-size:.82rem;font-weight:600;max-width:150px;text-align:center;line-height:1.25}
+.node .lvl{position:absolute;top:-4px;right:-6px;background:var(--surface);border:2px solid var(--line);border-radius:99px;font-size:.7rem;font-weight:700;padding:1px 7px}
+.node.next .face{outline:4px solid color-mix(in srgb,var(--warn) 70%,transparent);outline-offset:5px}
+.node .start{position:absolute;top:-34px;background:var(--surface);border:2px solid var(--line);color:var(--accent);font-weight:700;font-size:.75rem;padding:3px 10px;border-radius:10px;white-space:nowrap;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-4px)}}
+
+/* ---------- Sheet / modal ---------- */
+.scrim{position:fixed;inset:0;background:rgba(10,14,30,.5);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:560px;border-radius:22px 22px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto;animation:up .2s ease-out}
+@media (min-width:700px){.scrim{align-items:center}.sheet{border-radius:22px}}
+@keyframes up{from{transform:translateY(30px);opacity:.4}}
+
+/* ---------- Lesson ---------- */
+.lesson{display:flex;flex-direction:column;min-height:calc(100dvh - 12px - env(safe-area-inset-top))}
+.lhead{display:flex;align-items:center;gap:12px;padding:6px 0 14px}
+.x{background:none;border:0;padding:6px;color:var(--muted);display:grid;place-items:center}
+.x svg{width:26px;height:26px}
+.lhead .bar{flex:1;height:16px}
+.hearts{color:var(--ko);font-weight:700;display:flex;align-items:center;gap:4px}
+.hearts svg{width:22px;height:22px}
+.qkind{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tag{font-size:.7rem;padding:2px 8px;border-radius:99px;color:#fff;letter-spacing:.04em}
+.qtext{font-family:var(--display);font-weight:600;font-size:1.35rem;line-height:1.3;margin:10px 0 18px}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);border:2px solid var(--line);border-bottom-width:4px;border-radius:14px;padding:14px;font-size:1rem;line-height:1.35;min-height:56px}
+.opt .k{flex:none;width:28px;height:28px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;font-size:.8rem;font-weight:700;color:var(--muted)}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.opt[aria-pressed="true"] .k{border-color:var(--accent);color:var(--accent)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--ko);background:var(--ko-soft)}
+.opt[disabled]{cursor:default}
+.lbody{flex:1}
+.foot{position:sticky;bottom:0;margin:18px -16px 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));border-top:2px solid var(--line);background:var(--bg)}
+.foot.good{background:var(--ok-soft);border-color:transparent}
+.foot.bad{background:var(--ko-soft);border-color:transparent}
+.foot h3{font-size:1.25rem;display:flex;align-items:center;gap:8px}
+.foot.good h3{color:var(--ok)}
+.foot.bad h3{color:var(--ko)}
+.foot p{margin:6px 0 12px;font-size:.95rem}
+.foot .ai{margin:0 0 12px;padding:12px;border-radius:12px;background:var(--surface);font-size:.95rem}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--surface);border:2px solid var(--line);border-bottom-width:4px;border-radius:12px;padding:12px 10px;min-height:56px;font-size:.95rem;line-height:1.25}
+.tile.sel{border-color:var(--accent);background:var(--accent-soft)}
+.tile.done{opacity:.35;border-color:var(--ok);background:var(--ok-soft)}
+.tile.shake{border-color:var(--ko);background:var(--ko-soft);animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+/* Chuleta */
+.cheat{border-left:6px solid var(--accent);}
+.cheat ul{margin:8px 0 0;padding-left:20px}
+.cheat li{margin:6px 0}
+.cheat .mn{margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--accent-soft);font-weight:500}
+
+/* Results */
+.result{text-align:center;padding-top:24px}
+.result h1{font-size:2rem;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}
+.tile-s{border:2px solid var(--line);border-radius:14px;padding:10px 6px;background:var(--surface)}
+.tile-s b{display:block;font-size:1.35rem;font-family:var(--display)}
+.tile-s span{font-size:.75rem;font-weight:600;text-transform:uppercase;color:var(--muted);letter-spacing:.05em}
+
+/* Stats */
+.statgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.heat{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.heat i{aspect-ratio:1;border-radius:6px;background:var(--line);display:block}
+.heat i.l1{background:color-mix(in srgb,var(--ok) 35%,var(--line))}
+.heat i.l2{background:color-mix(in srgb,var(--ok) 65%,var(--line))}
+.heat i.l3{background:var(--ok)}
+.heat i.today{outline:2px solid var(--accent);outline-offset:1px}
+.bline{display:grid;grid-template-columns:90px 1fr 48px;gap:10px;align-items:center;font-size:.9rem}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left}
+
+/* Settings */
+.set{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.set:last-child{border-bottom:0}
+.set label{font-weight:500}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:12px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:var(--surface);padding:8px 12px;font-size:.85rem;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.switch{appearance:none;width:52px;height:30px;border-radius:99px;background:var(--line);position:relative;cursor:pointer;flex:none;transition:background .15s;margin:0}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.switch:checked{background:var(--ok)}
+.switch:checked::after{transform:translateX(22px)}
+textarea{width:100%;min-height:110px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink);padding:10px;font:inherit;font-size:.8rem}
+
+#toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);z-index:80;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:.9rem;max-width:90vw;display:none;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:70}
+.mascot{width:96px;height:96px;margin:0 auto}
+.note{font-size:.8rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:12px;margin-top:6px}
+.kbd{font-size:.75rem;color:var(--muted)}
+@media (max-width:640px){.kbd{display:none}}
+body.calm *{animation:none!important;transition:none!important}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <div class="brand" aria-label="PasoTAI">
+    <svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><path d="M6 18a6 6 0 0 1 6-6h14l6 6h20a6 6 0 0 1 6 6v26a6 6 0 0 1-6 6H12a6 6 0 0 1-6-6z" fill="var(--accent)"/><circle cx="24" cy="36" r="6" fill="#fff"/><circle cx="42" cy="36" r="6" fill="#fff"/><circle cx="25" cy="37" r="3" fill="#18203A"/><circle cx="43" cy="37" r="3" fill="#18203A"/></svg>
+    Paso<b>TAI</b>
+  </div>
+  <button class="chip" id="focusBtn" title="Temporizador de enfoque de 10 minutos" data-act="focus"></button>
+  <span class="chip flame" id="streakChip" title="Racha de días"></span>
+  <span class="chip" id="xpChip" title="Experiencia total"></span>
+  <span class="chip off" id="syncChip" title="Estado de sincronización"></span>
+</div></header>
+
+<nav class="nav" aria-label="Secciones">
+  <button data-go="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Aprender</button>
+  <button data-go="review"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Repaso</button>
+  <button data-go="sim"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Simulacro</button>
+  <button data-go="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Progreso</button>
+  <button data-go="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Ajustes</button>
+</nav>
+
+<main id="app"></main>
+<div id="toast" role="status" aria-live="polite"></div>
+<canvas id="confetti"></canvas>
+<div id="modal"></div>
+
+<script>
+/* =====================================================================
+   CONTENIDO — Programa TAI (AGE), 4 bloques. Formato de pregunta:
+   [enunciado, respuesta correcta, [3 distractores], explicación]
+   Las opciones se barajan al mostrarse.
+   ===================================================================== */
+const BLOCKS = [
+  {id:1, name:"Organización del Estado y Administración electrónica", short:"Bloque I", color:"var(--b1)"},
+  {id:2, name:"Tecnología básica", short:"Bloque II", color:"var(--b2)"},
+  {id:3, name:"Desarrollo de sistemas", short:"Bloque III", color:"var(--b3)"},
+  {id:4, name:"Sistemas y comunicaciones", short:"Bloque IV", color:"var(--b4)"}
+];
+
+const UNITS = [
+/* ---------------- BLOQUE I ---------------- */
+{id:"u1", b:1, code:"CE", t:"La Constitución de 1978",
+ cards:[{t:"Lo esencial de la Constitución",
+  l:["Ratificada en referéndum el 6 de diciembre de 1978; en vigor desde el 29 de diciembre de 1978 (día de su publicación en el BOE).",
+     "Estructura: Preámbulo, Título Preliminar + 10 títulos, 169 artículos, 4 disposiciones adicionales, 9 transitorias, 1 derogatoria y 1 final.",
+     "Art. 1.3: la forma política del Estado es la Monarquía parlamentaria.",
+     "Título I: derechos y deberes fundamentales. Recurso de amparo ante el TC: art. 14, Sección 1.ª del Cap. II (arts. 15-29) y objeción de conciencia (art. 30.2).",
+     "Art. 116: estados de alarma, excepción y sitio (desarrollados por la LO 4/1981)."],
+  mn:"Truco: «169 artículos, 10 títulos, 1978». El amparo cubre del 14 al 29 + la objeción del 30."}],
+ q:[
+  ["¿Cuántos artículos tiene la Constitución Española de 1978?","169",["155","178","196"],"La CE tiene 169 artículos, más disposiciones adicionales, transitorias, derogatoria y final."],
+  ["¿En qué título de la CE se regulan los derechos y deberes fundamentales?","Título I",["Título Preliminar","Título II","Título III"],"El Título I (arts. 10-55) recoge los derechos y deberes fundamentales."],
+  ["Según el art. 1.3 CE, la forma política del Estado español es…","La Monarquía parlamentaria",["La Monarquía constitucional","El Estado social y democrático","La Monarquía hereditaria"],"«Estado social y democrático de Derecho» es el art. 1.1; la forma política (art. 1.3) es la Monarquía parlamentaria."],
+  ["¿Qué fecha se ratificó la Constitución en referéndum?","6 de diciembre de 1978",["31 de octubre de 1978","27 de diciembre de 1978","29 de diciembre de 1978"],"Referéndum: 6/12/1978. Sanción del Rey: 27/12. Publicación y entrada en vigor: 29/12."],
+  ["¿Cuántos títulos tiene la CE, además del Título Preliminar?","10",["8","9","11"],"Título Preliminar + Títulos I a X."],
+  ["¿Qué artículo de la CE regula los estados de alarma, excepción y sitio?","Artículo 116",["Artículo 55","Artículo 97","Artículo 155"],"El art. 116 los regula; el 55 trata la suspensión de derechos y el 155 la coerción a una CA."],
+  ["¿A qué edad establece la CE la mayoría de edad de los españoles?","18 años",["16 años","21 años","14 años"],"Art. 12 CE: los españoles son mayores de edad a los 18 años."],
+  ["¿Qué derechos pueden protegerse mediante recurso de amparo ante el Tribunal Constitucional?","Los del art. 14, Sección 1.ª del Capítulo II y la objeción de conciencia",["Todos los del Título I","Solo los del Capítulo III (principios rectores)","Solo el derecho a la igualdad del art. 14"],"Art. 53.2 CE: amparo para el art. 14, arts. 15-29 y objeción de conciencia del art. 30."]
+ ]},
+{id:"u2", b:1, code:"Cortes", t:"Corona, Cortes, Gobierno y TC",
+ cards:[{t:"Instituciones clave en números",
+  l:["Título II: la Corona. Título III: las Cortes Generales. Título IV: Gobierno y Administración. Título IX: Tribunal Constitucional.",
+     "Congreso: entre 300 y 400 diputados (hoy 350). Legislatura: 4 años.",
+     "Investidura (art. 99): mayoría absoluta en 1.ª votación; si no, mayoría simple 48 horas después.",
+     "Moción de censura (art. 113): la propone al menos 1/10 de los diputados, con candidato (constructiva) y se aprueba por mayoría absoluta.",
+     "Tribunal Constitucional: 12 miembros, mandato de 9 años, se renueva por terceras partes cada 3 años.",
+     "Defensor del Pueblo: alto comisionado de las Cortes, elegido por 5 años."],
+  mn:"Truco: TC = 12 y 9 (doce magistrados, nueve años). Defensor = 5."}],
+ q:[
+  ["¿Cuántos miembros componen el Tribunal Constitucional?","12",["9","10","15"],"12 magistrados: 4 a propuesta del Congreso, 4 del Senado, 2 del Gobierno y 2 del CGPJ."],
+  ["¿Por cuánto tiempo son designados los miembros del Tribunal Constitucional?","9 años",["5 años","6 años","12 años"],"Mandato de 9 años, con renovación por terceras partes cada 3."],
+  ["Según la CE, el Congreso de los Diputados se compone de…","Un mínimo de 300 y un máximo de 400 diputados",["Exactamente 350 diputados","Un mínimo de 250 y un máximo de 350","Un mínimo de 350 y un máximo de 400"],"Art. 68.1 CE. La LOREG fija actualmente 350."],
+  ["¿Qué mayoría se requiere en la primera votación de investidura del Presidente del Gobierno?","Mayoría absoluta del Congreso",["Mayoría simple del Congreso","Mayoría de tres quintos","Mayoría absoluta de las Cortes Generales"],"Art. 99.3: mayoría absoluta; si no se obtiene, 48 horas después basta la mayoría simple."],
+  ["¿Quién puede proponer una moción de censura?","Al menos la décima parte de los diputados",["Al menos la quinta parte de los diputados","Cualquier grupo parlamentario del Senado","El Rey a propuesta del Congreso"],"Art. 113.2 CE: una décima parte de los diputados, con candidato a la Presidencia."],
+  ["¿Por cuánto tiempo es elegido el Defensor del Pueblo?","5 años",["4 años","6 años","9 años"],"LO 3/1981: mandato de 5 años, elegido por las Cortes Generales."],
+  ["¿Qué mayoría exige la aprobación de una ley orgánica?","Mayoría absoluta del Congreso en una votación final sobre el conjunto",["Mayoría simple de ambas Cámaras","Mayoría de tres quintos del Congreso","Mayoría absoluta del Senado"],"Art. 81.2 CE."],
+  ["¿Qué título de la Constitución regula la Corona?","Título II",["Título I","Título III","Título IV"],"Título II (arts. 56-65): De la Corona."]
+ ],
+ m:[{t:"Empareja cada institución con su dato",p:[["Tribunal Constitucional","12 miembros"],["Defensor del Pueblo","Mandato de 5 años"],["Legislatura","4 años"],["Moción de censura","1/10 de los diputados"]]}]},
+{id:"u3", b:1, code:"CCAA", t:"Territorio y Unión Europea",
+ cards:[{t:"Territorio y UE",
+  l:["Art. 137 CE: el Estado se organiza en municipios, provincias y comunidades autónomas.",
+     "17 comunidades autónomas + 2 ciudades autónomas (Ceuta y Melilla). Los Estatutos de Autonomía se aprueban por ley orgánica.",
+     "Art. 149 CE: competencias exclusivas del Estado. Art. 148: las que pueden asumir las CCAA.",
+     "UE: la Comisión tiene la iniciativa legislativa; Parlamento Europeo y Consejo de la UE legislan juntos; el TJUE está en Luxemburgo.",
+     "Reglamento UE: obligatorio y directamente aplicable. Directiva: obliga en cuanto al resultado; cada Estado elige la forma (transposición)."],
+  mn:"Truco: Reglamento = «tal cual». Directiva = «dirección a seguir», tú eliges el camino."}],
+ q:[
+  ["¿Cuántas comunidades autónomas hay en España?","17",["15","19","16"],"17 CCAA más las ciudades autónomas de Ceuta y Melilla."],
+  ["¿Mediante qué norma se aprueban los Estatutos de Autonomía?","Ley orgánica",["Ley ordinaria","Real decreto legislativo","Decreto-ley"],"Art. 81 CE y art. 147: se aprueban mediante ley orgánica."],
+  ["¿Qué artículo de la CE enumera las competencias exclusivas del Estado?","Artículo 149",["Artículo 148","Artículo 137","Artículo 150"],"El 148 lista las competencias que pueden asumir las CCAA; el 149 las exclusivas del Estado."],
+  ["¿Qué institución de la UE tiene, como regla general, la iniciativa legislativa?","La Comisión Europea",["El Parlamento Europeo","El Consejo Europeo","El Tribunal de Justicia de la UE"],"La Comisión propone; Parlamento y Consejo de la UE aprueban."],
+  ["Un acto de la UE obligatorio en todos sus elementos y directamente aplicable en cada Estado miembro es…","Un reglamento",["Una directiva","Una recomendación","Un dictamen"],"Art. 288 TFUE. La directiva obliga en cuanto al resultado; recomendaciones y dictámenes no son vinculantes."],
+  ["¿Dónde tiene su sede el Tribunal de Justicia de la Unión Europea?","Luxemburgo",["Bruselas","Estrasburgo","La Haya"],"Luxemburgo. El Parlamento Europeo tiene su sede oficial en Estrasburgo."],
+  ["¿Cada cuántos años se elige el Parlamento Europeo?","5 años",["4 años","6 años","7 años"],"Elecciones por sufragio universal directo cada 5 años."],
+  ["Según el art. 137 CE, el Estado se organiza territorialmente en…","Municipios, provincias y comunidades autónomas",["Municipios, comarcas y comunidades autónomas","Provincias, regiones y nacionalidades","Municipios, provincias e islas"],"Art. 137 CE."]
+ ]},
+{id:"u4", b:1, code:"39/40", t:"Leyes 39/2015 y 40/2015",
+ cards:[{t:"Procedimiento y régimen jurídico",
+  l:["Ley 39/2015: Procedimiento Administrativo Común de las AAPP (relación con la ciudadanía).",
+     "Ley 40/2015: Régimen Jurídico del Sector Público (organización interna, órganos colegiados, convenios, potestad sancionadora y responsabilidad patrimonial).",
+     "Plazo para resolver si la norma no dice nada: 3 meses (art. 21.3). Máximo general: 6 meses.",
+     "Silencio en procedimientos a solicitud del interesado: estimatorio como regla general (art. 24).",
+     "Obligados a relacionarse electrónicamente: personas jurídicas, entidades sin personalidad, colegiados obligatorios, sus representantes y empleados públicos (art. 14.2).",
+     "Días hábiles: se excluyen sábados, domingos y festivos (art. 30.2)."],
+  mn:"Truco: 39 = «la ciudadanía y la Administración» (de fuera hacia dentro). 40 = «la Administración por dentro»."}],
+ q:[
+  ["¿Qué regula la Ley 39/2015?","El Procedimiento Administrativo Común de las Administraciones Públicas",["El Régimen Jurídico del Sector Público","El Estatuto Básico del Empleado Público","La transparencia y el buen gobierno"],"La Ley 40/2015 es la de Régimen Jurídico del Sector Público."],
+  ["Si la norma reguladora no fija plazo máximo para resolver, ¿cuál es?","3 meses",["1 mes","6 meses","10 días"],"Art. 21.3 Ley 39/2015."],
+  ["En procedimientos iniciados a solicitud del interesado, el silencio administrativo es, como regla general…","Estimatorio",["Desestimatorio","Negativo siempre","Inexistente"],"Art. 24.1 Ley 39/2015, con excepciones (derecho de petición, dominio público, etc.)."],
+  ["¿Quién está obligado a relacionarse electrónicamente con las AAPP?","Las personas jurídicas",["Todas las personas físicas","Solo las personas mayores de 18 años","Solo quien lo solicite expresamente"],"Art. 14.2. Las personas físicas pueden elegir, salvo excepciones."],
+  ["Al computar plazos señalados por días, ¿qué días se excluyen?","Sábados, domingos y festivos",["Solo domingos y festivos","Solo festivos","Sábados y domingos, pero no festivos"],"Art. 30.2 Ley 39/2015."],
+  ["¿Qué plazo hay para interponer recurso de alzada contra un acto expreso?","1 mes",["15 días","2 meses","3 meses"],"Art. 122: un mes si el acto es expreso."],
+  ["¿Qué ley regula la responsabilidad patrimonial de las AAPP y los principios de la potestad sancionadora?","Ley 40/2015",["Ley 39/2015","Ley 19/2013","Ley 9/2017"],"Ley 40/2015, arts. 25-37."],
+  ["¿En qué artículo de la Ley 39/2015 se regulan los actos nulos de pleno derecho?","Artículo 47",["Artículo 48","Artículo 21","Artículo 35"],"Art. 47: nulidad de pleno derecho. Art. 48: anulabilidad."]
+ ],
+ m:[{t:"Empareja cada norma con su materia",p:[["Ley 39/2015","Procedimiento administrativo común"],["Ley 40/2015","Régimen jurídico del sector público"],["Ley 19/2013","Transparencia y buen gobierno"],["LO 3/2018","Protección de datos personales"],["LO 3/2007","Igualdad efectiva de mujeres y hombres"]]}]},
+{id:"u5", b:1, code:"RGPD", t:"Protección de datos y transparencia",
+ cards:[{t:"RGPD, LOPDGDD y transparencia",
+  l:["RGPD: Reglamento (UE) 2016/679, aplicable desde el 25 de mayo de 2018.",
+     "LOPDGDD: Ley Orgánica 3/2018, de 5 de diciembre. En España, el consentimiento de un menor vale desde los 14 años.",
+     "Brecha de seguridad: notificar a la autoridad de control en 72 horas.",
+     "Derechos: acceso, rectificación, supresión (olvido), limitación, portabilidad y oposición.",
+     "Autoridad de control en España: Agencia Española de Protección de Datos (AEPD).",
+     "Ley 19/2013 de transparencia: las solicitudes de acceso se resuelven en 1 mes (ampliable 1 mes más). Lo vigila el Consejo de Transparencia y Buen Gobierno."],
+  mn:"Truco: 72 horas para la brecha, 14 años para consentir, 1 mes para la transparencia."}],
+ q:[
+  ["¿Cuál es el plazo para notificar una violación de seguridad de datos personales a la autoridad de control?","72 horas",["24 horas","48 horas","7 días"],"Art. 33 RGPD: sin dilación indebida y, a ser posible, en 72 horas."],
+  ["¿A partir de qué edad puede un menor consentir el tratamiento de sus datos en España?","14 años",["13 años","16 años","18 años"],"Art. 7 LOPDGDD. El RGPD fija 16 por defecto y permite bajar hasta 13."],
+  ["¿Qué norma es el Reglamento General de Protección de Datos?","Reglamento (UE) 2016/679",["Directiva 95/46/CE","Reglamento (UE) 910/2014","Ley Orgánica 15/1999"],"910/2014 es eIDAS; la Directiva 95/46 y la LO 15/1999 están derogadas."],
+  ["¿Cuál NO es un derecho del interesado en el RGPD?","Derecho de auditoría del responsable",["Derecho a la portabilidad","Derecho de oposición","Derecho a la limitación del tratamiento"],"Los derechos son acceso, rectificación, supresión, limitación, portabilidad y oposición (y no ser objeto de decisiones automatizadas)."],
+  ["¿Cuál de estos datos NO es una categoría especial según el art. 9 RGPD?","La dirección postal",["Los datos de salud","Los datos biométricos para identificar a una persona","El origen étnico"],"Las categorías especiales incluyen salud, biométricos, origen étnico, ideología, religión, orientación sexual…"],
+  ["¿Qué plazo general tiene la Administración para resolver una solicitud de acceso a información pública?","1 mes",["10 días","3 meses","20 días hábiles"],"Art. 20 Ley 19/2013: un mes, ampliable otro mes."],
+  ["¿Qué número tiene la Ley Orgánica de Protección de Datos Personales y garantía de los derechos digitales?","LO 3/2018",["LO 15/1999","LO 3/2007","LO 1/2004"],"LO 3/2018, de 5 de diciembre."],
+  ["¿Qué organismo es la autoridad de control en protección de datos en España?","La Agencia Española de Protección de Datos (AEPD)",["El Consejo de Transparencia y Buen Gobierno","El Centro Criptológico Nacional","El INCIBE"],"La AEPD supervisa el cumplimiento del RGPD y la LOPDGDD."]
+ ]},
+{id:"u6", b:1, code:"eAdm", t:"Igualdad y Administración electrónica",
+ cards:[{t:"Normas que caen siempre",
+  l:["Igualdad: LO 3/2007, para la igualdad efectiva de mujeres y hombres. Violencia de género: LO 1/2004.",
+     "ENS (Esquema Nacional de Seguridad): Real Decreto 311/2022. Categorías: BÁSICA, MEDIA y ALTA.",
+     "Dimensiones de seguridad del ENS: confidencialidad, integridad, trazabilidad, autenticidad y disponibilidad.",
+     "ENI (Esquema Nacional de Interoperabilidad): Real Decreto 4/2010.",
+     "eIDAS: Reglamento (UE) 910/2014 (reformado por el 2024/1183). La firma electrónica cualificada equivale a la manuscrita.",
+     "Accesibilidad web del sector público: RD 1112/2018 (nivel WCAG AA). Cl@ve: identificación electrónica con la AGE."],
+  mn:"Truco ENS: «CITAD» = Confidencialidad, Integridad, Trazabilidad, Autenticidad, Disponibilidad."}],
+ q:[
+  ["¿Qué Real Decreto regula actualmente el Esquema Nacional de Seguridad?","Real Decreto 311/2022",["Real Decreto 3/2010","Real Decreto 4/2010","Real Decreto 1112/2018"],"El RD 311/2022 sustituyó al RD 3/2010."],
+  ["¿Cuáles son las categorías de seguridad de los sistemas en el ENS?","Básica, media y alta",["Baja, media y crítica","Nivel 1, 2 y 3","Pública, reservada y secreta"],"Art. 40 y anexo I del RD 311/2022."],
+  ["¿Cuál NO es una dimensión de seguridad del ENS?","Usabilidad",["Trazabilidad","Autenticidad","Disponibilidad"],"Las dimensiones son C, I, T, A, D: confidencialidad, integridad, trazabilidad, autenticidad y disponibilidad."],
+  ["¿Qué norma regula el Esquema Nacional de Interoperabilidad?","Real Decreto 4/2010",["Real Decreto 311/2022","Ley 40/2015","Real Decreto 203/2021"],"RD 4/2010 (ENI). El RD 203/2021 es el Reglamento de actuación y funcionamiento del sector público por medios electrónicos."],
+  ["Según eIDAS, ¿qué firma tiene un efecto jurídico equivalente al de una firma manuscrita?","La firma electrónica cualificada",["Cualquier firma electrónica simple","La firma electrónica avanzada sin certificado","La firma escaneada"],"Art. 25.2 del Reglamento (UE) 910/2014."],
+  ["¿Qué ley orgánica regula la igualdad efectiva de mujeres y hombres?","LO 3/2007",["LO 1/2004","LO 3/2018","LO 10/2022"],"LO 3/2007, de 22 de marzo. La LO 1/2004 es la de violencia de género."],
+  ["¿Qué nivel de conformidad WCAG exige el RD 1112/2018 a las webs del sector público?","AA",["A","AAA","Ninguno: es voluntario"],"Se remite a la norma UNE-EN 301 549, que exige WCAG 2.1 nivel AA."],
+  ["¿Qué es Cl@ve?","Un sistema de identificación electrónica para relacionarse con la AGE",["Un tipo de certificado de firma cualificado de la FNMT","El registro electrónico general de la AGE","La red de comunicaciones de la AGE"],"Cl@ve permite identificarse con Cl@ve PIN, Cl@ve permanente, certificado o DNIe."]
+ ]},
+/* ---------------- BLOQUE II ---------------- */
+{id:"u7", b:2, code:"0101", t:"Numeración y representación",
+ cards:[{t:"Bases y bits sin miedo",
+  l:["Binario → decimal: suma las potencias de 2 donde hay un 1. 1011 = 8+0+2+1 = 11.",
+     "Hexadecimal: 0-9 y A(10)…F(15). Cada dígito hex = 4 bits. 0xFF = 255.",
+     "Octal: cada dígito = 3 bits. 17 (octal) = 1·8 + 7 = 15.",
+     "Complemento a 2 con n bits: rango de −2^(n−1) a 2^(n−1)−1. Con 8 bits: −128 a 127.",
+     "ASCII: 7 bits (128 caracteres). UTF-8: longitud variable de 1 a 4 bytes.",
+     "IEEE 754: simple precisión 32 bits (1 signo, 8 exponente, 23 mantisa); doble 64 bits."],
+  mn:"Truco: 1 nibble = 4 bits = 1 dígito hex. 1 KiB = 1024 bytes; 1 KB = 1000 bytes."}],
+ q:[
+  ["¿Cuánto vale en decimal el número binario 1011?","11",["13","9","10"],"8 + 0 + 2 + 1 = 11."],
+  ["¿Cuánto vale en decimal el hexadecimal FF?","255",["256","240","15"],"15·16 + 15 = 255."],
+  ["¿Cuánto vale en decimal el número octal 17?","15",["17","13","23"],"1·8 + 7 = 15."],
+  ["Con 8 bits en complemento a 2, ¿qué rango se puede representar?","De −128 a 127",["De −127 a 127","De 0 a 255","De −128 a 128"],"−2^7 a 2^7 − 1."],
+  ["¿Cuántos bits usa el código ASCII estándar?","7",["8","16","6"],"El ASCII original usa 7 bits (128 símbolos). Las extensiones usan 8."],
+  ["¿Cuántos bits ocupa un número en coma flotante de simple precisión IEEE 754?","32",["16","64","80"],"1 bit de signo, 8 de exponente y 23 de mantisa."],
+  ["¿Cuántos bytes es un kibibyte (KiB)?","1024",["1000","1048","512"],"Prefijos binarios IEC: KiB = 2^10 bytes. El kilobyte (kB) del SI son 1000."],
+  ["En álgebra de Boole, A + A·B es igual a…","A",["B","A·B","A + B"],"Ley de absorción: A + A·B = A."],
+  ["¿Cuál es el resultado de 1 XOR 1?","0",["1","2","Indeterminado"],"XOR da 1 solo si las entradas son distintas."]
+ ],
+ m:[{t:"Empareja cada hexadecimal con su valor decimal",p:[["0xA","10"],["0x10","16"],["0x64","100"],["0xFF","255"]]}]},
+{id:"u8", b:2, code:"CPU", t:"Hardware y arquitectura",
+ cards:[{t:"Dentro del ordenador",
+  l:["Arquitectura von Neumann: datos e instrucciones comparten la misma memoria y el mismo bus. Harvard: memorias separadas.",
+     "CPU = unidad de control + ALU (operaciones aritméticas y lógicas) + registros.",
+     "Contador de programa (PC): guarda la dirección de la siguiente instrucción.",
+     "Jerarquía de memoria, de más rápida a más lenta: registros → caché → RAM → SSD/HDD.",
+     "RAM: volátil. ROM/flash: no volátil. NVMe: protocolo para SSD sobre bus PCIe.",
+     "UEFI con tabla de particiones GPT admite discos de más de 2 TB (MBR no)."],
+  mn:"Truco: «Re-Ca-Ra-Di» = Registros, Caché, RAM, Disco. De rápido a lento."}],
+ q:[
+  ["¿Qué registro contiene la dirección de la siguiente instrucción a ejecutar?","El contador de programa (PC)",["El registro de instrucción (IR)","El acumulador","El registro de estado"],"El IR guarda la instrucción actual; el PC, la dirección de la siguiente."],
+  ["¿Qué caracteriza a la arquitectura von Neumann?","Datos e instrucciones se almacenan en la misma memoria",["Datos e instrucciones usan memorias físicamente separadas","No tiene unidad de control","Solo ejecuta instrucciones en paralelo"],"La separación de memorias es propia de la arquitectura Harvard."],
+  ["¿Qué componente realiza las operaciones aritméticas y lógicas?","La ALU",["La unidad de control","La memoria caché","El bus de direcciones"],"Arithmetic Logic Unit."],
+  ["¿Cuál de estas memorias es más rápida?","Los registros de la CPU",["La memoria caché L3","La RAM","Un SSD NVMe"],"Registros > caché > RAM > almacenamiento."],
+  ["¿Sobre qué bus funcionan los SSD NVMe?","PCI Express",["SATA","USB","IDE/PATA"],"NVMe se diseñó para aprovechar PCIe; los SSD SATA usan AHCI."],
+  ["¿Cuál es la velocidad máxima teórica de USB 2.0?","480 Mbit/s",["12 Mbit/s","5 Gbit/s","10 Gbit/s"],"12 Mbit/s es USB 1.1 Full Speed; 5 Gbit/s, USB 3.0."],
+  ["¿Qué esquema de particiones permite discos de más de 2 TB y es el habitual con UEFI?","GPT",["MBR","FAT32","CHS"],"MBR está limitado a 2 TiB con sectores de 512 bytes."],
+  ["La memoria RAM es…","Volátil: pierde su contenido sin alimentación",["No volátil","De solo lectura","Más lenta que un disco duro"],"Por eso los datos deben guardarse en almacenamiento persistente."]
+ ]},
+{id:"u9", b:2, code:"SO", t:"Sistemas operativos",
+ cards:[{t:"Procesos, memoria y bloqueos",
+  l:["Estados de un proceso: nuevo, listo, en ejecución, bloqueado y terminado.",
+     "Los hilos de un mismo proceso comparten su espacio de memoria; los procesos no.",
+     "Round Robin: planificación por turnos con un quantum de tiempo fijo.",
+     "Interbloqueo (deadlock): exige las 4 condiciones de Coffman: exclusión mutua, retención y espera, no expropiación y espera circular.",
+     "Memoria virtual con paginación: si la página no está en RAM hay fallo de página. Hiperpaginación (thrashing): el sistema pasa más tiempo paginando que ejecutando.",
+     "Semáforos: mecanismo de sincronización propuesto por Dijkstra."],
+  mn:"Truco Coffman: «En Rusia No Esperan» = Exclusión, Retención, No expropiación, Espera circular."}],
+ q:[
+  ["¿Qué algoritmo de planificación asigna la CPU por turnos durante un quantum fijo?","Round Robin",["FCFS","SJF","Prioridades sin expropiación"],"Round Robin es apropiativo y usa un quantum."],
+  ["¿Cuál NO es una condición de Coffman para el interbloqueo?","Planificación por prioridades",["Exclusión mutua","Espera circular","No expropiación"],"Las cuatro son exclusión mutua, retención y espera, no expropiación y espera circular."],
+  ["¿Qué ocurre cuando un proceso accede a una página que no está en memoria principal?","Se produce un fallo de página",["Se produce un interbloqueo","El proceso termina","Se produce un desbordamiento de pila"],"El SO carga la página desde el almacenamiento secundario."],
+  ["¿Cómo se llama la situación en la que el sistema pasa más tiempo paginando que ejecutando?","Hiperpaginación (thrashing)",["Inanición","Fragmentación externa","Condición de carrera"],"Suele deberse a demasiados procesos para la memoria disponible."],
+  ["¿Qué comparten los hilos de un mismo proceso?","El espacio de direcciones de memoria",["La pila (stack)","El contador de programa","Los registros de CPU"],"Cada hilo tiene su propia pila, PC y registros; comparten código, datos y heap."],
+  ["¿Quién propuso los semáforos como mecanismo de sincronización?","Edsger Dijkstra",["Alan Turing","Edgar F. Codd","Linus Torvalds"],"Dijkstra los introdujo en 1965 con las operaciones P y V."],
+  ["Un proceso que espera a que termine una operación de E/S está en estado…","Bloqueado",["Listo","En ejecución","Nuevo"],"Cuando la E/S termina pasa a listo."],
+  ["¿Qué tipo de núcleo tiene Linux?","Monolítico (con módulos cargables)",["Microkernel puro","Exokernel","Híbrido como Windows NT"],"Linux es monolítico modular; Windows NT se considera híbrido."]
+ ]},
+{id:"u10", b:2, code:"{ }", t:"Estructuras de datos y algoritmos",
+ cards:[{t:"Estructuras que hay que tener claras",
+  l:["Pila (stack): LIFO, el último en entrar es el primero en salir. Cola (queue): FIFO.",
+     "Búsqueda binaria: necesita el vector ordenado; coste O(log n).",
+     "Quicksort: O(n log n) de media, O(n²) en el peor caso. Mergesort: O(n log n) siempre.",
+     "Árbol binario de búsqueda: el recorrido en inorden devuelve los elementos ordenados.",
+     "Tabla hash: acceso medio O(1); las colisiones se resuelven por encadenamiento o direccionamiento abierto.",
+     "Dijkstra: camino mínimo en grafos con pesos no negativos."],
+  mn:"Truco: pila = platos apilados (LIFO). Cola = cola del súper (FIFO)."}],
+ q:[
+  ["¿Qué estructura sigue la política LIFO?","La pila",["La cola","La cola de prioridad","La lista circular"],"Last In, First Out."],
+  ["¿Qué requisito tiene la búsqueda binaria?","Que el vector esté ordenado",["Que el vector tenga tamaño par","Que no haya elementos repetidos","Que los datos estén en una lista enlazada"],"Divide el rango a la mitad en cada paso: O(log n)."],
+  ["¿Cuál es la complejidad del peor caso de Quicksort?","O(n²)",["O(n log n)","O(n)","O(log n)"],"Ocurre con pivotes mal elegidos (p. ej., vector ya ordenado y pivote extremo)."],
+  ["¿Qué recorrido de un árbol binario de búsqueda devuelve los elementos ordenados?","Inorden",["Preorden","Postorden","Por niveles"],"Izquierda, raíz, derecha."],
+  ["¿Qué algoritmo calcula el camino mínimo desde un origen en un grafo con pesos no negativos?","Dijkstra",["Kruskal","Prim","Búsqueda en profundidad"],"Kruskal y Prim calculan árboles de expansión mínima."],
+  ["¿Qué problema típico hay que resolver en una tabla hash?","Las colisiones",["El desbordamiento de pila","El interbloqueo","La fragmentación externa"],"Dos claves distintas pueden dar el mismo índice."],
+  ["¿Qué algoritmo de ordenación tiene coste O(n log n) también en el peor caso?","Mergesort",["Quicksort","Burbuja","Inserción"],"Burbuja e inserción son O(n²) en el peor caso."]
+ ]},
+/* ---------------- BLOQUE III ---------------- */
+{id:"u11", b:3, code:"BD", t:"Bases de datos y normalización",
+ cards:[{t:"Modelo relacional en 1 minuto",
+  l:["Modelo relacional: Edgar F. Codd (1970). Modelo Entidad-Relación: Peter Chen (1976).",
+     "Grado de una relación = número de atributos (columnas). Cardinalidad = número de tuplas (filas).",
+     "Clave primaria: única y no nula. Clave ajena (foránea): garantiza la integridad referencial.",
+     "1FN: atributos atómicos. 2FN: 1FN + dependencia completa de la clave. 3FN: 2FN + sin dependencias transitivas. FNBC: todo determinante es clave candidata.",
+     "Transacciones ACID: Atomicidad, Consistencia, Aislamiento (Isolation), Durabilidad.",
+     "Arquitectura ANSI/SPARC: niveles externo, conceptual e interno."],
+  mn:"Truco normalización: «la clave, toda la clave y nada más que la clave»."}],
+ q:[
+  ["¿Quién propuso el modelo relacional de bases de datos?","Edgar F. Codd",["Peter Chen","Charles Bachman","Larry Ellison"],"Codd, en IBM, en 1970. Chen propuso el modelo E-R en 1976."],
+  ["En el modelo relacional, el grado de una relación es…","El número de atributos",["El número de tuplas","El número de claves candidatas","El número de relaciones con las que se vincula"],"La cardinalidad es el número de tuplas."],
+  ["Una relación está en 3FN si está en 2FN y además…","No tiene dependencias funcionales transitivas respecto a la clave",["Todos sus atributos son atómicos","No tiene claves ajenas","Todo determinante es clave candidata"],"«Todo determinante es clave candidata» define la FNBC."],
+  ["¿Qué exige la primera forma normal (1FN)?","Que los atributos sean atómicos (sin grupos repetitivos)",["Que no haya dependencias transitivas","Que no haya dependencias parciales","Que haya una sola clave candidata"],"Las dependencias parciales se eliminan en 2FN."],
+  ["¿Qué significa la «I» de ACID?","Aislamiento (Isolation)",["Integridad","Indexación","Identidad"],"Las transacciones concurrentes no deben interferir entre sí."],
+  ["¿Qué garantiza una clave ajena (foránea)?","La integridad referencial",["La unicidad de las filas","Que el campo no sea nulo","La indexación automática"],"Sus valores deben existir como clave en la tabla referenciada (o ser nulos)."],
+  ["¿Cuáles son los tres niveles de la arquitectura ANSI/SPARC?","Externo, conceptual e interno",["Físico, lógico y de red","Cliente, servidor y datos","Presentación, negocio y datos"],"Permiten la independencia lógica y física de los datos."]
+ ]},
+{id:"u12", b:3, code:"SQL", t:"SQL",
+ cards:[{t:"SQL que entra en el examen",
+  l:["DDL (definición): CREATE, ALTER, DROP, TRUNCATE. DML (manipulación): SELECT, INSERT, UPDATE, DELETE. DCL (control): GRANT, REVOKE. TCL (transacciones): COMMIT, ROLLBACK, SAVEPOINT.",
+     "Orden lógico: FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY.",
+     "WHERE filtra filas; HAVING filtra grupos (después de GROUP BY).",
+     "COUNT(*) cuenta todas las filas; COUNT(columna) ignora los NULL. Para comparar con NULL: IS NULL.",
+     "LEFT JOIN: todas las filas de la tabla izquierda, aunque no casen. UNION quita duplicados; UNION ALL no."],
+  mn:"Truco del orden: «Fíjate, Will Gana Haciendo Sus Oposiciones» = FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY."}],
+ q:[
+  ["¿Qué cláusula filtra los grupos formados por GROUP BY?","HAVING",["WHERE","ORDER BY","DISTINCT"],"WHERE actúa antes de agrupar, sobre filas individuales."],
+  ["¿A qué sublenguaje pertenece la sentencia GRANT?","DCL",["DDL","DML","TCL"],"Data Control Language: GRANT y REVOKE."],
+  ["¿Cuál es la forma correcta de buscar valores nulos en una columna?","WHERE columna IS NULL",["WHERE columna = NULL","WHERE columna == NULL","WHERE columna EQUALS NULL"],"Cualquier comparación con = NULL da UNKNOWN."],
+  ["¿Qué diferencia hay entre COUNT(*) y COUNT(columna)?","COUNT(columna) no cuenta los valores NULL de esa columna",["COUNT(*) no cuenta los duplicados","No hay ninguna diferencia","COUNT(columna) solo funciona con números"],"COUNT(*) cuenta todas las filas."],
+  ["¿Qué devuelve un LEFT JOIN?","Todas las filas de la tabla izquierda y las coincidentes de la derecha",["Solo las filas que coinciden en ambas tablas","Todas las filas de ambas tablas","El producto cartesiano de ambas tablas"],"Si no hay coincidencia, las columnas de la derecha salen a NULL."],
+  ["¿Qué diferencia hay entre UNION y UNION ALL?","UNION elimina filas duplicadas; UNION ALL las mantiene",["UNION ALL elimina duplicados; UNION no","UNION solo une dos tablas y UNION ALL más","No hay diferencia"],"UNION ALL es más rápido porque no ordena ni compara."],
+  ["En el orden lógico de evaluación de una consulta, ¿qué se procesa antes?","WHERE",["SELECT","HAVING","ORDER BY"],"FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY."],
+  ["¿Qué sentencia elimina todas las filas de una tabla sin poder usar WHERE y se considera DDL?","TRUNCATE",["DELETE","DROP","REMOVE"],"DROP elimina la tabla entera; DELETE es DML y admite WHERE."]
+ ],
+ m:[{t:"Empareja cada sentencia con su sublenguaje",p:[["CREATE","DDL (definición)"],["SELECT","DML (manipulación)"],["GRANT","DCL (control)"],["COMMIT","TCL (transacciones)"]]}]},
+{id:"u13", b:3, code:"MV3", t:"Ingeniería del software y Métrica v3",
+ cards:[{t:"Ciclo de vida y metodologías",
+  l:["Métrica v3: procesos PSI (planificación), Desarrollo (EVS, ASI, DSI, CSI, IAS) y MSI (mantenimiento).",
+     "EVS: Estudio de Viabilidad · ASI: Análisis · DSI: Diseño · CSI: Construcción · IAS: Implantación y Aceptación.",
+     "Interfaces de Métrica v3: Gestión de Proyectos, Seguridad, Aseguramiento de la Calidad y Gestión de la Configuración.",
+     "Cascada: fases secuenciales. Espiral (Boehm): iterativo y centrado en el análisis de riesgos.",
+     "Scrum: sprints de 1 mes o menos; responsabilidades Product Owner, Scrum Master y Developers. Manifiesto Ágil: 2001.",
+     "Mantenimiento: correctivo (errores), adaptativo (cambios del entorno), perfectivo (mejoras) y evolutivo (nuevos requisitos)."],
+  mn:"Truco Métrica: «Elena Ana Diseña Con Ilusión» = EVS, ASI, DSI, CSI, IAS."}],
+ q:[
+  ["En Métrica v3, ¿qué significa ASI?","Análisis del Sistema de Información",["Aseguramiento del Sistema de Información","Arquitectura del Sistema de Información","Aceptación del Sistema de Información"],"Los procesos de desarrollo son EVS, ASI, DSI, CSI e IAS."],
+  ["¿Cuál de estos NO es un proceso principal de Métrica v3?","Gestión de la Configuración",["Planificación de Sistemas de Información","Desarrollo de Sistemas de Información","Mantenimiento de Sistemas de Información"],"Gestión de la Configuración es una interfaz, igual que Gestión de Proyectos, Seguridad y Calidad."],
+  ["¿Qué modelo de ciclo de vida, propuesto por Boehm, se centra en el análisis de riesgos?","Espiral",["Cascada","Modelo en V","Incremental"],"Cada vuelta de la espiral incluye la evaluación de riesgos."],
+  ["Según la Guía Scrum, ¿cuál es la duración máxima de un sprint?","Un mes",["Una semana","Dos meses","No tiene límite"],"Sprints de duración fija de un mes o menos."],
+  ["El mantenimiento que adapta el software a cambios en su entorno (SO, hardware, normativa) es…","Adaptativo",["Correctivo","Perfectivo","Preventivo"],"El correctivo arregla errores; el perfectivo mejora rendimiento o calidad."],
+  ["Las pruebas que se diseñan a partir de la especificación, sin mirar el código, son de…","Caja negra",["Caja blanca","Cobertura de caminos","Complejidad ciclomática"],"Las de caja blanca se basan en la estructura interna del código."],
+  ["¿Qué mide la complejidad ciclomática de McCabe?","El número de caminos independientes de un programa",["El número de líneas de código","El acoplamiento entre módulos","El tiempo de ejecución"],"V(G) = aristas − nodos + 2."],
+  ["¿En qué año se publicó el Manifiesto Ágil?","2001",["1995","2005","1999"],"Firmado en Snowbird (Utah) en febrero de 2001."]
+ ],
+ m:[{t:"Empareja cada proceso de Métrica v3",p:[["EVS","Estudio de viabilidad"],["ASI","Análisis"],["DSI","Diseño"],["CSI","Construcción"],["IAS","Implantación y aceptación"]]}]},
+{id:"u14", b:3, code:"POO", t:"Orientación a objetos y UML",
+ cards:[{t:"Objetos y diagramas",
+  l:["Pilares de la POO: abstracción, encapsulamiento, herencia y polimorfismo.",
+     "Sobrecarga: mismo nombre, distintos parámetros (en la misma clase). Sobrescritura: la subclase redefine un método heredado.",
+     "Una clase abstracta no se puede instanciar.",
+     "UML, diagramas de estructura: clases, objetos, componentes, despliegue, paquetes. De comportamiento: casos de uso, actividad, estados, secuencia.",
+     "Visibilidad en UML: + público, − privado, # protegido, ~ paquete.",
+     "Composición (rombo relleno): la parte muere con el todo. Agregación (rombo vacío): la parte puede existir sola."],
+  mn:"Truco: rombo relleno = relación «llena», más fuerte (composición)."}],
+ q:[
+  ["¿Cómo se llama definir en una subclase un método con la misma firma que en la superclase?","Sobrescritura (overriding)",["Sobrecarga (overloading)","Encapsulamiento","Instanciación"],"La sobrecarga cambia los parámetros manteniendo el nombre."],
+  ["En UML, ¿qué símbolo indica visibilidad privada?","−",["+","#","~"],"+ público, # protegido, ~ paquete."],
+  ["¿Cuál de estos es un diagrama UML de comportamiento?","Diagrama de casos de uso",["Diagrama de clases","Diagrama de despliegue","Diagrama de componentes"],"Clases, despliegue y componentes son diagramas de estructura."],
+  ["En UML, un rombo relleno en un extremo de la asociación representa…","Una composición",["Una agregación","Una herencia","Una dependencia"],"El rombo vacío es la agregación; la herencia se dibuja con triángulo hueco."],
+  ["¿Qué afirmación sobre una clase abstracta es correcta?","No se puede instanciar directamente",["No puede tener métodos implementados","No puede tener atributos","No puede heredar de otra clase"],"Puede tener métodos implementados y atributos; solo se instancian sus subclases concretas."],
+  ["¿Qué patrón de diseño garantiza que una clase tenga una única instancia?","Singleton",["Factory Method","Observer","Adapter"],"Proporciona además un punto de acceso global a esa instancia."],
+  ["¿Qué ejecuta el bytecode generado al compilar código Java?","La máquina virtual de Java (JVM)",["El compilador javac","El sistema operativo directamente","El navegador"],"«Escribe una vez, ejecuta en cualquier parte»."],
+  ["Ocultar el estado interno de un objeto y exponer solo métodos públicos es…","Encapsulamiento",["Polimorfismo","Herencia","Recursividad"],"Por eso los atributos suelen ser privados con getters/setters."]
+ ]},
+{id:"u15", b:3, code:"Web", t:"Desarrollo web",
+ cards:[{t:"La web por dentro",
+  l:["Códigos HTTP: 2xx éxito (200 OK, 201 Created), 3xx redirección (301 permanente), 4xx error del cliente (401, 403, 404), 5xx error del servidor (500, 503).",
+     "Métodos idempotentes: GET, PUT y DELETE. POST no es idempotente.",
+     "HTTP usa el puerto 80; HTTPS el 443.",
+     "HTML5 semántico: header, nav, main, article, section, footer.",
+     "CSS: #id selecciona por id; .clase por clase. JavaScript: === compara valor y tipo.",
+     "REST: recursos identificados por URI y operaciones con métodos HTTP; suele intercambiar JSON."],
+  mn:"Truco: 4xx = «tú (cliente) la has liado». 5xx = «el servidor la ha liado»."}],
+ q:[
+  ["¿Qué código de estado HTTP indica que el recurso no existe?","404",["403","500","301"],"403 = prohibido; 500 = error interno; 301 = movido permanentemente."],
+  ["¿Cuál de estos métodos HTTP NO es idempotente?","POST",["GET","PUT","DELETE"],"Repetir un POST puede crear varios recursos."],
+  ["¿Qué puerto usa por defecto HTTPS?","443",["80","8080","8443"],"HTTP usa el 80."],
+  ["En CSS, ¿qué selector elige el elemento con id «menu»?","#menu",[".menu","menu","*menu"],".menu selecciona por clase."],
+  ["En JavaScript, ¿qué hace el operador ===?","Compara valor y tipo sin conversión",["Compara solo el valor convirtiendo tipos","Asigna un valor","Compara referencias de memoria de cadenas"],"1 === '1' es false; 1 == '1' es true."],
+  ["¿Qué elemento HTML5 se usa para el bloque de navegación principal?","<nav>",["<menu>","<navigation>","<header>"],"<nav> agrupa los enlaces de navegación."],
+  ["¿Qué rango de códigos HTTP indica errores del servidor?","5xx",["4xx","3xx","2xx"],"Por ejemplo, 500 Internal Server Error o 503 Service Unavailable."],
+  ["¿Qué formato de datos se usa con más frecuencia en las API REST?","JSON",["CSV","DOCX","BMP"],"JavaScript Object Notation."]
+ ],
+ m:[{t:"Empareja cada código HTTP con su significado",p:[["200","OK"],["301","Movido permanentemente"],["403","Prohibido"],["404","No encontrado"],["500","Error interno del servidor"]]}]},
+{id:"u16", b:3, code:"A11y", t:"Accesibilidad, calidad y pruebas",
+ cards:[{t:"Accesible y probado",
+  l:["WCAG: 4 principios POUR = Perceptible, Operable, Comprensible y Robusto. Niveles A, AA y AAA.",
+     "Contraste mínimo nivel AA: 4,5:1 en texto normal y 3:1 en texto grande.",
+     "Las imágenes informativas necesitan texto alternativo (atributo alt).",
+     "Niveles de prueba: unitarias → integración → sistema → aceptación (con el usuario).",
+     "Regresión: comprobar que un cambio no rompe lo que ya funcionaba. TDD: se escribe la prueba antes que el código.",
+     "ISO/IEC 25010: modelo de calidad del producto software."],
+  mn:"Truco: POUR, como «pour» en inglés (verter): la web debe «verterse» a todo el mundo."}],
+ q:[
+  ["¿Cuáles son los cuatro principios de las WCAG?","Perceptible, operable, comprensible y robusto",["Visible, usable, legible y estable","Accesible, rápido, seguro y estándar","Perceptible, navegable, simple y compatible"],"POUR."],
+  ["¿Qué relación de contraste mínima exige WCAG nivel AA para texto normal?","4,5:1",["3:1","7:1","2:1"],"7:1 es el nivel AAA; 3:1 vale para texto grande en AA."],
+  ["¿Qué atributo HTML proporciona el texto alternativo de una imagen?","alt",["title","src","longdesc obligatorio"],"Los lectores de pantalla leen el alt."],
+  ["Las pruebas que comprueban que un cambio no ha estropeado funcionalidades existentes son…","De regresión",["De aceptación","De estrés","Unitarias"],"Se repiten tras cada modificación."],
+  ["En TDD (desarrollo guiado por pruebas), ¿qué se hace primero?","Escribir una prueba que falla",["Escribir el código de producción","Desplegar en producción","Documentar el diseño"],"Ciclo rojo → verde → refactorizar."],
+  ["¿Qué norma define el modelo de calidad del producto software?","ISO/IEC 25010",["ISO 9001","ISO/IEC 27001","ISO/IEC 12207"],"27001 es seguridad de la información; 12207, procesos del ciclo de vida; 9001, gestión de la calidad."],
+  ["¿Qué pruebas realiza el usuario para validar que el sistema cumple sus requisitos?","De aceptación",["Unitarias","De integración","De caja blanca"],"Son las últimas antes de la puesta en producción."]
+ ]},
+/* ---------------- BLOQUE IV ---------------- */
+{id:"u17", b:4, code:"OSI", t:"Modelo OSI y TCP/IP",
+ cards:[{t:"Las 7 capas",
+  l:["OSI de abajo arriba: 1 Física, 2 Enlace, 3 Red, 4 Transporte, 5 Sesión, 6 Presentación, 7 Aplicación.",
+     "PDU: bit (física), trama (enlace), paquete (red), segmento (transporte).",
+     "Hub: capa 1. Switch: capa 2 (direcciones MAC). Router: capa 3 (direcciones IP).",
+     "TCP: orientado a conexión y fiable (saludo en 3 pasos SYN, SYN-ACK, ACK). UDP: sin conexión, más ligero.",
+     "Dirección MAC: 48 bits. ARP resuelve una IP en su MAC.",
+     "Ethernet: IEEE 802.3. Wi-Fi: IEEE 802.11 (Wi-Fi 6 = 802.11ax)."],
+  mn:"Truco OSI (abajo→arriba): «Fíjate En Rojo, Todos Sonríen Por Algo»."}],
+ q:[
+  ["¿En qué capa del modelo OSI trabaja un router?","Red (capa 3)",["Enlace (capa 2)","Transporte (capa 4)","Física (capa 1)"],"Encamina paquetes según la dirección IP."],
+  ["¿Cuál es la secuencia del establecimiento de conexión TCP?","SYN, SYN-ACK, ACK",["SYN, ACK, FIN","ACK, SYN, SYN-ACK","HELLO, ACK, SYN"],"El saludo en tres pasos (three-way handshake)."],
+  ["¿Qué protocolo obtiene la dirección MAC a partir de una IPv4?","ARP",["RARP","DNS","DHCP"],"RARP hacía lo contrario (obsoleto)."],
+  ["¿Cuántos bits tiene una dirección MAC?","48",["32","64","128"],"6 bytes, normalmente en hexadecimal: 00:1A:2B:3C:4D:5E."],
+  ["¿Cómo se llama la unidad de datos en la capa de enlace?","Trama",["Paquete","Segmento","Datagrama de aplicación"],"Bit (1), trama (2), paquete (3), segmento (4)."],
+  ["¿Qué estándar IEEE corresponde a Ethernet?","802.3",["802.11","802.15","802.1X"],"802.11 es Wi-Fi, 802.15 Bluetooth/WPAN, 802.1X control de acceso por puerto."],
+  ["¿Qué afirmación sobre UDP es correcta?","No es orientado a conexión y no garantiza la entrega",["Garantiza la entrega ordenada","Usa el saludo en tres pasos","Trabaja en la capa de red"],"Se usa en DNS, streaming o VoIP por su menor sobrecarga."],
+  ["¿Qué capa OSI se ocupa del cifrado, la compresión y el formato de los datos?","Presentación (capa 6)",["Sesión (capa 5)","Aplicación (capa 7)","Transporte (capa 4)"],"La capa de sesión gestiona el diálogo entre aplicaciones."],
+  ["¿Qué estándar es Wi-Fi 6?","IEEE 802.11ax",["IEEE 802.11ac","IEEE 802.11n","IEEE 802.11be"],"ac = Wi-Fi 5; n = Wi-Fi 4; be = Wi-Fi 7."]
+ ],
+ m:[{t:"Empareja cada PDU con su capa",p:[["Bit","Física"],["Trama","Enlace"],["Paquete","Red"],["Segmento","Transporte"]]}]},
+{id:"u18", b:4, code:"IP", t:"Direccionamiento IP y subredes",
+ cards:[{t:"Subredes sin sufrir",
+  l:["IPv4: 32 bits. IPv6: 128 bits.",
+     "Hosts útiles = 2^(bits de host) − 2. /24 → 254 · /25 → 126 · /26 → 62 · /27 → 30 · /28 → 14 · /30 → 2.",
+     "Privadas (RFC 1918): 10.0.0.0/8, 172.16.0.0/12 (172.16 a 172.31) y 192.168.0.0/16.",
+     "Loopback: 127.0.0.1 en IPv4 y ::1 en IPv6. APIPA (sin DHCP): 169.254.0.0/16.",
+     "Difusión (broadcast): todos los bits de host a 1. En 192.168.1.0/24 es 192.168.1.255.",
+     "NAT traduce direcciones privadas a públicas."],
+  mn:"Truco: resta el prefijo a 32, eleva 2 a eso y quita 2. /26 → 32−26 = 6 → 64 − 2 = 62."}],
+ q:[
+  ["¿Cuántos hosts útiles admite una subred /26?","62",["64","30","126"],"2^6 − 2 = 62."],
+  ["¿Qué máscara corresponde al prefijo /24?","255.255.255.0",["255.255.0.0","255.255.255.128","255.255.255.192"],"24 bits a 1."],
+  ["¿Cuál de estas direcciones es privada?","172.20.5.1",["172.32.0.1","192.169.1.1","11.0.0.1"],"El rango privado de clase B va de 172.16.0.0 a 172.31.255.255."],
+  ["¿Cuántos bits tiene una dirección IPv6?","128",["64","32","256"],"Se escribe en 8 grupos de 4 dígitos hexadecimales."],
+  ["¿Cuál es la dirección de difusión de la red 192.168.1.0/24?","192.168.1.255",["192.168.1.0","192.168.1.254","255.255.255.0"],"Todos los bits de host a 1."],
+  ["¿Cuál es la dirección de loopback en IPv6?","::1",["127.0.0.1","fe80::1","::"],":: es la dirección no especificada; fe80::/10 son direcciones de enlace local."],
+  ["¿Qué prefijo se usa típicamente en enlaces punto a punto porque deja solo 2 hosts útiles?","/30",["/29","/31 siempre","/28"],"2^2 − 2 = 2."],
+  ["Un equipo con IP 169.254.10.20 indica normalmente que…","No ha podido obtener dirección de un servidor DHCP",["Está en una red pública","Usa IPv6","Tiene una IP fija bien configurada"],"Es una dirección APIPA (autoconfiguración de enlace local)."]
+ ]},
+{id:"u19", b:4, code:":53", t:"Protocolos, puertos y servicios",
+ cards:[{t:"Puertos que hay que saberse",
+  l:["21 FTP (control) · 22 SSH · 23 Telnet · 25 SMTP · 53 DNS · 67/68 DHCP · 80 HTTP · 110 POP3 · 123 NTP · 143 IMAP · 161 SNMP · 389 LDAP · 443 HTTPS · 3389 RDP.",
+     "DHCP sigue el proceso DORA: Discover, Offer, Request, Acknowledge.",
+     "Registros DNS: A (IPv4), AAAA (IPv6), CNAME (alias), MX (correo), PTR (resolución inversa), NS (servidor de nombres).",
+     "SMTP envía correo; POP3 e IMAP lo leen (IMAP lo mantiene en el servidor).",
+     "NTP sincroniza la hora; SNMP gestiona y monitoriza dispositivos de red."],
+  mn:"Truco: 22 = SSH (dos «S», dos «2»). 53 = DNS. 3389 = escritorio remoto de Windows."}],
+ q:[
+  ["¿Qué puerto usa por defecto SSH?","22",["21","23","2222"],"21 = FTP, 23 = Telnet."],
+  ["¿Qué registro DNS indica el servidor de correo de un dominio?","MX",["A","CNAME","PTR"],"Mail eXchanger."],
+  ["¿Cuál es el orden de mensajes en DHCP?","Discover, Offer, Request, Acknowledge",["Request, Offer, Discover, Acknowledge","Offer, Discover, Acknowledge, Request","Discover, Request, Offer, Acknowledge"],"DORA."],
+  ["¿Qué puerto usa el protocolo DNS?","53",["25","67","110"],"Normalmente sobre UDP, y TCP para transferencias de zona o respuestas grandes."],
+  ["¿Qué protocolo usa el puerto 3389?","RDP (Escritorio remoto)",["SMB","LDAP","MySQL"],"SMB usa 445, LDAP 389 y MySQL 3306."],
+  ["¿Qué registro DNS resuelve un nombre en una dirección IPv6?","AAAA",["A","A6 obligatorio","PTR"],"A es para IPv4."],
+  ["¿Para qué se usa el protocolo NTP?","Sincronizar la hora de los equipos",["Transferir ficheros","Gestionar dispositivos de red","Enviar correo"],"Usa el puerto UDP 123."],
+  ["¿Qué protocolo permite leer el correo manteniéndolo en el servidor y sincronizado entre dispositivos?","IMAP",["POP3","SMTP","SNMP"],"IMAP usa el 143 (993 con TLS)."]
+ ],
+ m:[{t:"Empareja cada puerto con su servicio",p:[["22","SSH"],["25","SMTP"],["53","DNS"],["443","HTTPS"],["3389","RDP"],["143","IMAP"]]}]},
+{id:"u20", b:4, code:"Sec", t:"Seguridad informática",
+ cards:[{t:"Seguridad en pocas líneas",
+  l:["Tríada CIA: confidencialidad, integridad y disponibilidad.",
+     "Cifrado simétrico (una clave compartida): AES. Asimétrico (pareja pública/privada): RSA. Hash: SHA-256 (MD5 y SHA-1 se consideran inseguros).",
+     "Firma digital: se firma con la clave privada del emisor y se verifica con su clave pública.",
+     "MFA combina factores: algo que sabes, algo que tienes y algo que eres.",
+     "DMZ: zona de red intermedia para servicios expuestos a Internet. DDoS: denegación de servicio distribuida.",
+     "CCN-CERT: CERT gubernamental nacional (sector público). INCIBE-CERT: ciudadanía y empresas."],
+  mn:"Truco firma: firmo con lo mío (privada); tú compruebas con lo público."}],
+ q:[
+  ["Para firmar digitalmente un documento, el emisor utiliza…","Su clave privada",["Su clave pública","La clave pública del receptor","Una clave simétrica compartida"],"El receptor verifica la firma con la clave pública del emisor."],
+  ["¿Cuál de estos es un algoritmo de cifrado simétrico?","AES",["RSA","Diffie-Hellman","ECDSA"],"RSA y ECDSA son asimétricos; Diffie-Hellman es intercambio de claves."],
+  ["¿Qué tres propiedades forman la tríada CIA?","Confidencialidad, integridad y disponibilidad",["Cifrado, identificación y autenticación","Control, inspección y auditoría","Confidencialidad, identidad y autorización"],"Confidentiality, Integrity, Availability."],
+  ["¿Qué organismo es el CERT gubernamental nacional de España?","CCN-CERT",["INCIBE-CERT","AEPD","ESPDEF-CERT"],"INCIBE-CERT atiende a ciudadanía y empresas; ESPDEF-CERT es el del Ministerio de Defensa."],
+  ["¿Qué combinación es una autenticación multifactor real?","Contraseña + código en el móvil",["Contraseña + pregunta de seguridad","Dos contraseñas distintas","Usuario + contraseña"],"Combina algo que sabes con algo que tienes."],
+  ["¿Qué es una DMZ en una red corporativa?","Una subred intermedia donde se publican servicios accesibles desde Internet",["Un tipo de malware","Un protocolo de cifrado","Una red Wi-Fi para invitados sin cifrar"],"Aísla los servidores expuestos de la red interna."],
+  ["¿Qué tipo de malware cifra los datos de la víctima y pide un rescate?","Ransomware",["Spyware","Adware","Rootkit"],"Uno de los mayores riesgos para las AAPP."],
+  ["¿Cuál de estas funciones hash se considera hoy segura?","SHA-256",["MD5","SHA-1","CRC32"],"MD5 y SHA-1 tienen colisiones prácticas; CRC32 no es criptográfica."]
+ ],
+ m:[{t:"Empareja cada algoritmo con su tipo",p:[["AES","Cifrado simétrico"],["RSA","Cifrado asimétrico"],["SHA-256","Función hash"],["Diffie-Hellman","Intercambio de claves"]]}]},
+{id:"u21", b:4, code:"$_", t:"Administración Linux y Windows",
+ cards:[{t:"Comandos y conceptos",
+  l:["Permisos Linux en octal: r = 4, w = 2, x = 1. chmod 755 = rwxr-xr-x. chmod 640 = rw-r-----.",
+     "root tiene UID 0. Usuarios en /etc/passwd; hashes de contraseñas en /etc/shadow. Configuración en /etc.",
+     "ps / top: procesos · grep: buscar patrones · ln -s: enlace simbólico · crontab: tareas programadas.",
+     "Windows Server: Active Directory usa LDAP y Kerberos. Sistema de archivos habitual: NTFS.",
+     "PowerShell: cmdlets verbo-sustantivo, como Get-Process o Get-Service."],
+  mn:"Truco: 7 = 4+2+1 (rwx), 5 = 4+1 (r-x), 6 = 4+2 (rw-)."}],
+ q:[
+  ["¿Qué permisos otorga chmod 755?","rwxr-xr-x",["rwxrwxr-x","rw-r--r--","rwxr--r--"],"7 = rwx (propietario), 5 = r-x (grupo), 5 = r-x (otros)."],
+  ["¿Qué UID tiene el superusuario root en Linux?","0",["1","1000","65535"],"Los usuarios normales suelen empezar en 1000."],
+  ["¿En qué fichero se almacenan los hashes de las contraseñas en Linux?","/etc/shadow",["/etc/passwd","/etc/group","/etc/hosts"],"/etc/passwd es legible por todos; por eso los hashes van en shadow."],
+  ["¿Qué comando de Linux crea un enlace simbólico?","ln -s",["ln -h","link -sym","cp -s obligatorio"],"Sin -s, ln crea un enlace duro."],
+  ["¿Qué herramienta se usa en Linux para programar tareas periódicas?","cron (crontab)",["systemctl mask","at -l","grep"],"at programa tareas puntuales; cron, periódicas."],
+  ["¿Qué protocolo de autenticación usa por defecto Active Directory?","Kerberos",["NTLM v1","RADIUS","TACACS+"],"NTLM se mantiene por compatibilidad."],
+  ["¿Qué permisos otorga chmod 640?","rw-r-----",["rw-rw----","rwxr-----","r--rw----"],"6 = rw-, 4 = r--, 0 = ---."],
+  ["¿Qué cmdlet de PowerShell muestra los procesos en ejecución?","Get-Process",["Show-Process","List-Tasks","ps-all"],"Formato Verbo-Sustantivo."]
+ ]},
+{id:"u22", b:4, code:"RAID", t:"Almacenamiento, copias y nube",
+ cards:[{t:"Datos a salvo",
+  l:["RAID 0: reparto sin redundancia. RAID 1: espejo. RAID 5: paridad distribuida (mín. 3 discos, aguanta 1 fallo). RAID 6: doble paridad (mín. 4, aguanta 2). RAID 10: espejo + reparto.",
+     "Copia incremental: lo que cambió desde la última copia de cualquier tipo. Diferencial: lo que cambió desde la última copia completa.",
+     "Regla 3-2-1: 3 copias, en 2 soportes distintos, 1 fuera de las instalaciones.",
+     "NAS: almacenamiento a nivel de archivo (NFS, SMB). SAN: a nivel de bloque (iSCSI, Fibre Channel).",
+     "Hipervisor tipo 1 (nativo): ESXi, Hyper-V, KVM. Tipo 2 (alojado): VirtualBox, VMware Workstation.",
+     "Nube: IaaS (infraestructura), PaaS (plataforma), SaaS (software). RPO = datos que puedes perder; RTO = tiempo hasta recuperarte."],
+  mn:"Truco: RPO = «Pérdida» (hacia atrás). RTO = «Tiempo» de vuelta (hacia delante)."}],
+ q:[
+  ["¿Cuántos discos necesita como mínimo un RAID 5?","3",["2","4","5"],"La paridad distribuida necesita al menos 3."],
+  ["¿Qué nivel RAID no ofrece ninguna redundancia?","RAID 0",["RAID 1","RAID 5","RAID 6"],"Si falla un disco, se pierde todo el volumen."],
+  ["Una copia que guarda lo modificado desde la última copia completa es…","Diferencial",["Incremental","Completa","Sintética"],"Para restaurar necesitas la completa y la última diferencial."],
+  ["¿Qué diferencia una SAN de un NAS?","La SAN ofrece almacenamiento a nivel de bloque; el NAS, a nivel de archivo",["La SAN usa NFS y el NAS iSCSI","El NAS es siempre más rápido","No hay diferencia"],"SAN: iSCSI o Fibre Channel. NAS: NFS o SMB/CIFS."],
+  ["¿Cuál de estos es un hipervisor de tipo 1?","VMware ESXi",["VirtualBox","VMware Workstation","QEMU sobre escritorio Windows"],"Se ejecuta directamente sobre el hardware."],
+  ["En la nube, un servicio de correo web listo para usar (p. ej., webmail corporativo) es…","SaaS",["IaaS","PaaS","DaaS por definición"],"Software como servicio."],
+  ["¿Qué indica el RPO en un plan de continuidad?","La cantidad máxima de datos (tiempo) que se puede perder",["El tiempo máximo para restaurar el servicio","El número de copias necesarias","El coste de la recuperación"],"El RTO es el tiempo para recuperar el servicio."],
+  ["¿Qué comparten los contenedores (p. ej., Docker) con el sistema anfitrión?","El núcleo (kernel) del sistema operativo",["Nada, cada uno lleva su propio kernel","La BIOS","El hipervisor de tipo 2"],"Por eso son más ligeros que las máquinas virtuales."]
+ ],
+ m:[{t:"Empareja cada nivel RAID",p:[["RAID 0","Reparto sin redundancia"],["RAID 1","Espejo"],["RAID 5","Paridad distribuida"],["RAID 6","Doble paridad"]]}]}
+];
+
+/* Índice de preguntas */
+const QMAP = {}; const UMAP = {};
+UNITS.forEach(u => { UMAP[u.id] = u; u.q.forEach((r, i) => { const id = u.id + "-" + i; QMAP[id] = {id, u:u.id, b:u.b, q:r[0], c:r[1], w:r[2], e:r[3]}; }); });
+const ALLQ = Object.keys(QMAP);
+
+/* =====================================================================
+   ESTADO Y PERSISTENCIA
+   ===================================================================== */
+const LS = "pasotai.v1";
+const today = () => new Date().toLocaleDateString("sv-SE");
+const dayNum = (s) => { const [y,m,d] = (s || today()).split("-").map(Number); return Math.round(Date.UTC(y, m-1, d) / 864e5); };
+const fromDayNum = n => new Date(n * 864e5).toISOString().slice(0,10);
+const fresh = () => ({v:1, xp:0, streak:0, best:0, lastDay:null, days:{}, goal:30, q:{}, units:{}, sims:[], settings:{sound:true, hearts:false, font:"lexend", size:17, calm:false, theme:"auto"}, updatedAt:0});
+let state = fresh();
+function migrate(s){ const f = fresh(); s = Object.assign(f, s || {}); s.settings = Object.assign(fresh().settings, s.settings || {}); return s; }
+try { const raw = localStorage.getItem(LS); if (raw) state = migrate(JSON.parse(raw)); } catch(e) {}
+
+function save(){ state.updatedAt = Date.now(); try { localStorage.setItem(LS, JSON.stringify(state)); } catch(e) {} pushRemote(); updateTop(); }
+
+/* Sincronización entre dispositivos (si la página dispone de base de datos) */
+let remoteRef = null, remoteBusy = false, remoteAgain = false, syncState = "local";
+function setSync(s){ syncState = s; updateTop(); }
+async function pushRemote(){
+  if (!remoteRef) return;
+  if (remoteBusy) { remoteAgain = true; return; }
+  remoteBusy = true; setSync("saving");
+  try { await remoteRef.set(JSON.parse(JSON.stringify(state))); setSync("ok"); }
+  catch(e){ setSync("error"); }
+  remoteBusy = false;
+  if (remoteAgain) { remoteAgain = false; pushRemote(); }
+}
+function withTimeout(p, ms){ return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]); }
+async function waitClaude(){ for (let i = 0; i < 50; i++){ if (window.claude && typeof window.claude.use === "function") return true; await new Promise(r => setTimeout(r, 100)); } return false; }
+let sampleFn = null;
+(async () => {
+  if (!(await waitClaude())) return;
+  try { const s = await claude.use("sample"); if (s) { sampleFn = s; render(); } } catch(e) {}
+  try {
+    const db = await claude.use("db"); const user = await claude.use("user");
+    if (!db || !user) return;
+    const id = await user.id(); if (!id) return;
+    const ref = db.collection("data/users/" + id).doc("progress");
+    setSync("saving");
+    const snap = await withTimeout(ref.get(), 10000);
+    const remote = snap && typeof snap.data === "function" ? snap.data() : snap;
+    remoteRef = ref;
+    if (remote && remote.v && (remote.updatedAt || 0) > (state.updatedAt || 0)) {
+      state = migrate(remote); try { localStorage.setItem(LS, JSON.stringify(state)); } catch(e) {}
+      applySettings(); setSync("ok"); toast("Progreso sincronizado desde tu otro dispositivo"); if (!L) render();
+    } else { pushRemote(); }
+  } catch(e) { setSync("error"); }
+})();
+
+/* =====================================================================
+   UTILIDADES
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const blockOf = id => BLOCKS.find(b => b.id === id);
+const ICON = {
+  flame:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 1-3.5S9 11 10.5 11C10.5 7 12 2 12 2z"/></svg>',
+  bolt:'<svg viewBox="0 0 24 24" fill="var(--warn)"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-8-5.3-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.7-8 11-8 11z"/></svg>',
+  close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  cloud:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 8z"/></svg>',
+  timer:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>'
+};
+function mascot(mood){
+  const mouth = mood === "sad" ? '<path d="M24 50q8-6 16 0" stroke="#18203A" stroke-width="3" fill="none" stroke-linecap="round"/>' :
+                mood === "wow" ? '<ellipse cx="32" cy="50" rx="5" ry="6" fill="#18203A"/>' :
+                '<path d="M23 47q9 9 18 0" stroke="#18203A" stroke-width="3" fill="none" stroke-linecap="round"/>';
+  return `<svg class="mascot" viewBox="0 0 64 64" aria-hidden="true"><path d="M4 16a6 6 0 0 1 6-6h15l6 6h23a6 6 0 0 1 6 6v30a6 6 0 0 1-6 6H10a6 6 0 0 1-6-6z" fill="var(--accent)"/><path d="M4 24h56" stroke="rgba(255,255,255,.25)" stroke-width="2"/><circle cx="23" cy="35" r="7" fill="#fff"/><circle cx="41" cy="35" r="7" fill="#fff"/><circle cx="24" cy="36" r="3.4" fill="#18203A"/><circle cx="42" cy="36" r="3.4" fill="#18203A"/>${mouth}<circle cx="14" cy="44" r="3" fill="#FF8FA3" opacity=".6"/><circle cx="50" cy="44" r="3" fill="#FF8FA3" opacity=".6"/></svg>`;
+}
+let toastT;
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(toastT); toastT = setTimeout(() => t.style.display = "none", 2600); }
+
+/* Sonido (Web Audio, sin archivos) */
+let actx;
+function beep(kind){
+  if (!state.settings.sound) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const notes = kind === "ok" ? [660, 880] : kind === "done" ? [523, 659, 784, 1047] : [220, 180];
+    notes.forEach((f, i) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = kind === "ko" ? "sawtooth" : "sine"; o.frequency.value = f;
+      const t0 = actx.currentTime + i * 0.09;
+      g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(kind === "ko" ? 0.05 : 0.12, t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+      o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0 + 0.2);
+    });
+  } catch(e) {}
+}
+
+/* Confeti */
+function confetti(){
+  if (state.settings.calm || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const c = $("#confetti"), x = c.getContext("2d"); c.width = innerWidth; c.height = innerHeight;
+  const cols = ["#3446E0","#F2A10C","#139A5B","#E5762A","#8A3FD9","#109C93"];
+  const ps = Array.from({length:110}, () => ({x: c.width/2, y: c.height*0.35, vx:(Math.random()-0.5)*14, vy:Math.random()*-12-4, s:Math.random()*7+4, c:cols[Math.floor(Math.random()*cols.length)], r:Math.random()*6}));
+  let f = 0;
+  (function tick(){
+    x.clearRect(0,0,c.width,c.height);
+    ps.forEach(p => { p.vy += 0.45; p.x += p.vx; p.y += p.vy; p.r += 0.2; x.save(); x.translate(p.x,p.y); x.rotate(p.r); x.fillStyle = p.c; x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2); x.restore(); });
+    if (++f < 110) requestAnimationFrame(tick); else x.clearRect(0,0,c.width,c.height);
+  })();
+}
+
+/* =====================================================================
+   REPETICIÓN ESPACIADA (cajas de Leitner)
+   ===================================================================== */
+const INTERVAL = [0, 0, 1, 3, 7, 16, 35]; // días según caja 1..6
+function grade(id, ok){
+  if (!QMAP[id]) return;
+  const s = state.q[id] || {b:0, d:0, ok:0, ko:0};
+  if (ok) { s.ok++; s.b = Math.min(6, (s.b || 0) + 1); } else { s.ko++; s.b = 1; }
+  s.d = dayNum() + INTERVAL[s.b];
+  state.q[id] = s;
+}
+const dueIds = () => ALLQ.filter(id => { const s = state.q[id]; return s && s.d <= dayNum(); }).sort((a, b) => (state.q[a].b - state.q[b].b) || (state.q[a].d - state.q[b].d));
+const mastered = () => ALLQ.filter(id => (state.q[id] || {}).b >= 4).length;
+function unitProgress(u){ const ids = u.q.map((_, i) => u.id + "-" + i); const sum = ids.reduce((a, id) => a + Math.min(4, (state.q[id] || {}).b || 0), 0); return Math.round(sum / (ids.length * 4) * 100); }
+function blockAcc(b){ let ok = 0, ko = 0; ALLQ.forEach(id => { if (QMAP[id].b === b && state.q[id]) { ok += state.q[id].ok; ko += state.q[id].ko; } }); return {ok, ko, pct: ok + ko ? Math.round(ok / (ok + ko) * 100) : null}; }
+
+/* Racha y XP */
+function todayXP(){ return state.days[today()] || 0; }
+function liveStreak(){ if (!state.lastDay) return 0; const d = dayNum() - dayNum(state.lastDay); return d <= 1 ? state.streak : 0; }
+function addXP(n){
+  state.xp += n; state.days[today()] = todayXP() + n;
+  const t = today();
+  if (state.lastDay !== t) {
+    const gap = state.lastDay ? dayNum(t) - dayNum(state.lastDay) : 99;
+    state.streak = gap === 1 ? state.streak + 1 : 1; state.lastDay = t; state.best = Math.max(state.best, state.streak);
+  }
+}
+
+/* =====================================================================
+   NAVEGACIÓN Y CABECERA
+   ===================================================================== */
+let view = "home", L = null, SIM = null, focusEnd = 0, focusTick = null;
+function go(v){ view = v; L = null; window.scrollTo(0, 0); render(); }
+function updateTop(){
+  $("#streakChip").innerHTML = ICON.flame + `<span class="num">${liveStreak()}</span>`;
+  $("#streakChip").classList.toggle("off", todayXP() === 0);
+  $("#xpChip").innerHTML = ICON.bolt + `<span class="num">${state.xp}</span>`;
+  const sc = $("#syncChip");
+  const lab = {local:"En este dispositivo", saving:"Guardando…", ok:"Sincronizado", error:"Sin sincronizar"}[syncState];
+  sc.innerHTML = ICON.cloud + `<span class="small">${syncState === "ok" ? "" : ""}</span>`;
+  sc.title = lab; sc.setAttribute("aria-label", lab); sc.classList.toggle("off", syncState !== "ok");
+  const fb = $("#focusBtn");
+  if (focusEnd > Date.now()) { const s = Math.ceil((focusEnd - Date.now()) / 1000); fb.innerHTML = ICON.timer + `<span class="num">${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}</span>`; fb.classList.add("timer"); }
+  else { fb.innerHTML = ICON.timer + `<span class="small">Enfoque</span>`; fb.classList.remove("timer"); }
+  document.querySelectorAll(".nav button").forEach(b => b.setAttribute("aria-current", b.dataset.go === view ? "page" : "false"));
+}
+function toggleFocus(){
+  if (focusEnd > Date.now()) { focusEnd = 0; clearInterval(focusTick); updateTop(); toast("Temporizador parado"); return; }
+  focusEnd = Date.now() + 10 * 60 * 1000; toast("10 minutos de foco. ¡A por ello!");
+  clearInterval(focusTick);
+  focusTick = setInterval(() => { if (Date.now() >= focusEnd) { clearInterval(focusTick); focusEnd = 0; beep("done"); showModal(`<div class="stack" style="text-align:center">${mascot("wow")}<h2>¡10 minutos de foco!</h2><p>Levántate, bebe agua y estira 2 minutos. Tu cerebro lo agradece.</p><button class="btn block" data-act="closeModal">Hecho</button></div>`); } updateTop(); }, 1000);
+  updateTop();
+}
+function applySettings(){
+  const s = state.settings, b = document.body;
+  b.classList.toggle("f-atk", s.font === "atkinson"); b.classList.toggle("f-sys", s.font === "system");
+  b.classList.toggle("calm", !!s.calm);
+  document.documentElement.style.setProperty("--fs", s.size + "px");
+  if (s.theme === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", s.theme);
+}
+function showModal(html){ $("#modal").innerHTML = `<div class="scrim" data-act="scrim"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`; const f = $("#modal .sheet button"); if (f) f.focus(); }
+function closeModal(){ $("#modal").innerHTML = ""; }
+
+/* =====================================================================
+   VISTAS
+   ===================================================================== */
+function render(){
+  document.body.classList.toggle("in-lesson", !!L || (view === "sim" && SIM && !SIM.done));
+  updateTop();
+  const app = $("#app");
+  if (L) return renderLesson(app);
+  if (view === "sim") return renderSim(app);
+  if (view === "review") return renderReview(app);
+  if (view === "stats") return renderStats(app);
+  if (view === "settings") return renderSettings(app);
+  renderHome(app);
+}
+
+function nextUnit(){ return UNITS.find(u => !(state.units[u.id] && state.units[u.id].lvl)) || UNITS.slice().sort((a, b) => unitProgress(a) - unitProgress(b))[0]; }
+
+function renderHome(app){
+  const due = dueIds().length, nu = nextUnit(), gp = Math.min(100, Math.round(todayXP() / state.goal * 100));
+  const hello = todayXP() >= state.goal ? "¡Meta de hoy cumplida! Lo que hagas ahora es extra." :
+                todayXP() > 0 ? `Llevas ${todayXP()} XP hoy. Te faltan ${state.goal - todayXP()} para la meta.` :
+                "Una lección son unos 3 minutos. Empieza con una y ya cuenta.";
+  let html = `<div class="stack">
+    <section class="hero">
+      <div><h2>Sesión de hoy</h2><p>${due >= 3 ? `Tienes ${due} preguntas para repasar y luego seguimos con <b>${esc(nu.t)}</b>.` : `Toca: <b>${esc(nu.t)}</b> (${blockOf(nu.b).short}).`}</p></div>
+      ${mascot("happy").replace('class="mascot"', 'class="mascot" style="width:64px;height:64px"')}
+      <div class="acts"><button class="btn" data-act="today">Empezar</button><button class="link" data-act="quick">Solo tengo 1 minuto</button></div>
+    </section>
+    <section class="card goal"><div class="ring" style="--p:${gp}"><span class="num">${gp}%</span></div><div><b>Meta diaria: ${state.goal} XP</b><div class="muted small">${hello}</div></div></section>`;
+  BLOCKS.forEach(b => {
+    const us = UNITS.filter(u => u.b === b.id);
+    html += `<section><div class="block-head" style="background:${b.color}"><div><small>${b.short}</small><h3>${esc(b.name)}</h3></div><span class="small num">${us.length} unidades</span></div><div class="path">`;
+    us.forEach((u, i) => {
+      const off = [0, 56, 84, 56, 0, -56, -84, -56][i % 8];
+      const lvl = (state.units[u.id] || {}).lvl || 0, p = unitProgress(u), isNext = u.id === nu.id;
+      html += `<button class="node${isNext ? " next" : ""}" style="transform:translateX(${off}px)" data-act="unit" data-u="${u.id}" aria-label="${esc(u.t)}, nivel ${lvl} de 5, dominio ${p}%">
+        ${isNext ? '<span class="start">EMPEZAR</span>' : ""}
+        <span class="disc" style="--p:${p}"><span class="face" style="background:${b.color}">${esc(u.code)}</span></span>
+        ${lvl ? `<span class="lvl num">${lvl}/5</span>` : ""}
+        <span class="lbl">${esc(u.t)}</span></button>`;
+    });
+    html += `</div></section>`;
+  });
+  html += `<p class="note">Contenido basado en el programa oficial del TAI (Anexo de la convocatoria de la AGE) y en la normativa vigente a noviembre de 2026. Compruébalo siempre con el BOE de tu convocatoria. El anillo amarillo de cada unidad es tu dominio real: sube cuando aciertas preguntas en días distintos.</p></div>`;
+  app.innerHTML = html;
+}
+
+function openUnit(uid){
+  const u = UMAP[uid], b = blockOf(u.b), lvl = (state.units[uid] || {}).lvl || 0;
+  showModal(`<div class="stack">
+    <div class="qkind"><span class="tag" style="background:${b.color}">${b.short}</span> Nivel ${lvl}/5 · Dominio ${unitProgress(u)}%</div>
+    <h2>${esc(u.t)}</h2>
+    <button class="btn block" data-act="startUnit" data-u="${uid}">${lvl ? "Lección (3 min)" : "Primera lección (3 min)"}</button>
+    <button class="btn ghost block" data-act="cheat" data-u="${uid}">Ver chuleta</button>
+    ${sampleFn ? `<button class="btn ghost block" data-act="aiLesson" data-u="${uid}">Lección extra creada con IA</button>` : ""}
+    <button class="link" data-act="closeModal">Cerrar</button></div>`);
+}
+function cheatHTML(u){
+  return u.cards.map(c => `<div class="card cheat" style="border-left-color:${blockOf(u.b).color}"><h3>${esc(c.t)}</h3><ul>${c.l.map(x => `<li>${esc(x)}</li>`).join("")}</ul>${c.mn ? `<div class="mn">${esc(c.mn)}</div>` : ""}</div>`).join("");
+}
+
+/* ---------------- Motor de lecciones ---------------- */
+function mcItem(id){ const q = QMAP[id]; return {type:"mc", id, opts: shuffle([q.c, ...q.w])}; }
+function matchItem(set){ const pairs = shuffle(set.p).slice(0, 4); return {type:"match", t:set.t, pairs, left: shuffle(pairs.map((p, i) => ({i, s:p[0]}))), right: shuffle(pairs.map((p, i) => ({i, s:p[1]}))), done:new Set(), sel:null, miss:0}; }
+function pickForUnit(u, n){
+  const ids = u.q.map((_, i) => u.id + "-" + i), now = dayNum();
+  const score = id => { const s = state.q[id]; return (!s ? 0 : s.d <= now ? 1 : 2 + s.b) + Math.random() * 0.8; };
+  return ids.map(id => [id, score(id)]).sort((a, b) => a[1] - b[1]).slice(0, n).map(x => x[0]);
+}
+function startLesson(kind, opts = {}){
+  closeModal();
+  let items = [], unit = opts.unit ? UMAP[opts.unit] : null, showCheat = false;
+  if (kind === "lesson") {
+    const n = opts.quick ? 3 : 5;
+    items = pickForUnit(unit, n).map(mcItem);
+    if (!opts.quick && unit.m && unit.m.length) items.splice(3, 0, matchItem(unit.m[Math.floor(Math.random() * unit.m.length)]));
+    showCheat = !(state.units[unit.id] && state.units[unit.id].seen);
+  } else if (kind === "review") {
+    let ids = dueIds().slice(0, opts.quick ? 3 : 8);
+    if (!ids.length) ids = shuffle(ALLQ.filter(id => state.q[id])).slice(0, opts.quick ? 3 : 8);
+    if (!ids.length) { toast("Aún no hay nada que repasar. Haz tu primera lección."); return; }
+    items = ids.map(mcItem);
+  } else if (kind === "ai") {
+    items = opts.items;
+  }
+  L = {kind, unit, items, i:0, sel:null, checked:false, firstTry:{}, xp:0, okFirst:0, total:items.length, hearts: state.settings.hearts ? 5 : null, start: Date.now(), cheat: showCheat, ai:"", aiBusy:false, combo:0, maxCombo:0, quick:!!opts.quick};
+  window.scrollTo(0, 0); render();
+}
+function renderLesson(app){
+  if (L.cheat) {
+    app.innerHTML = `<div class="lesson"><div class="lhead"><button class="x" data-act="quit" aria-label="Salir">${ICON.close}</button><div class="bar"><i style="width:0%"></i></div></div>
+      <div class="lbody stack"><div class="qkind">Antes de empezar · 1 minuto de lectura</div>${cheatHTML(L.unit)}</div>
+      <div class="foot"><button class="btn block" data-act="cheatDone">Entendido, ¡vamos!</button></div></div>`;
+    return;
+  }
+  const it = L.items[L.i], pct = Math.round(L.i / L.items.length * 100);
+  const head = `<div class="lhead"><button class="x" data-act="quit" aria-label="Salir de la lección">${ICON.close}</button><div class="bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>${L.hearts !== null ? `<span class="hearts">${ICON.heart}<span class="num">${L.hearts}</span></span>` : ""}</div>`;
+  let body = "", foot = "";
+  if (it.type === "mc") {
+    const q = it.q || QMAP[it.id], b = blockOf(q.b || (L.unit && L.unit.b) || 1);
+    body = `<div class="qkind"><span class="tag" style="background:${b.color}">${b.short}</span>${it.ai ? '<span class="tag" style="background:var(--muted)">Creada con IA</span>' : ""}${L.combo >= 3 ? `<span style="color:var(--warn)">Racha de ${L.combo} aciertos</span>` : ""}</div>
+      <div class="qtext">${esc(q.q)}</div>
+      <div class="opts" role="group" aria-label="Opciones">${it.opts.map((o, k) => {
+        let cls = "";
+        if (L.checked) { if (o === q.c) cls = "right"; else if (k === L.sel) cls = "wrong"; }
+        return `<button class="opt ${cls}" data-act="pick" data-k="${k}" aria-pressed="${L.sel === k}" ${L.checked ? "disabled" : ""}><span class="k">${k + 1}</span><span>${esc(o)}</span></button>`;
+      }).join("")}</div>`;
+    if (!L.checked) foot = `<div class="foot"><button class="btn block" data-act="check" ${L.sel === null ? "disabled" : ""}>Comprobar</button><div class="kbd" style="text-align:center;margin-top:8px">Teclas 1-4 para elegir · Intro para comprobar</div></div>`;
+    else {
+      const ok = it.opts[L.sel] === q.c;
+      const praise = ["¡Correcto!","¡Muy bien!","¡Eso es!","¡Genial!","¡Perfecto!"][Math.floor(Math.random()*5)];
+      foot = `<div class="foot ${ok ? "good" : "bad"}"><h3>${ok ? praise : "No pasa nada"}</h3>
+        <p>${ok ? "" : `Respuesta correcta: <b>${esc(q.c)}</b>. `}${esc(q.e)}</p>
+        ${L.ai ? `<div class="ai">${L.ai}</div>` : ""}
+        <div class="row" style="justify-content:space-between">${sampleFn && !L.ai ? `<button class="link" data-act="explain" ${L.aiBusy ? "disabled" : ""}>${L.aiBusy ? "Pensando…" : "Explícamelo más fácil"}</button>` : "<span></span>"}</div>
+        <button class="btn block ${ok ? "okb" : "kob"}" data-act="next" style="margin-top:8px">Continuar</button></div>`;
+    }
+  } else {
+    body = `<div class="qkind">Empareja</div><div class="qtext">${esc(it.t)}</div>
+      <div class="match"><div class="stack" style="gap:10px">${it.left.map(x => `<button class="tile ${it.done.has(x.i) ? "done" : ""} ${it.sel && it.sel.side === "L" && it.sel.i === x.i ? "sel" : ""}" data-act="tile" data-side="L" data-i="${x.i}" ${it.done.has(x.i) ? "disabled" : ""}>${esc(x.s)}</button>`).join("")}</div>
+      <div class="stack" style="gap:10px">${it.right.map(x => `<button class="tile ${it.done.has(x.i) ? "done" : ""} ${it.sel && it.sel.side === "R" && it.sel.i === x.i ? "sel" : ""}" data-act="tile" data-side="R" data-i="${x.i}" ${it.done.has(x.i) ? "disabled" : ""}>${esc(x.s)}</button>`).join("")}</div></div>`;
+    if (it.done.size === it.pairs.length) foot = `<div class="foot good"><h3>${it.miss ? "¡Completado!" : "¡Perfecto, sin fallos!"}</h3><button class="btn block okb" data-act="next">Continuar</button></div>`;
+    else foot = `<div class="foot"><div class="muted small" style="text-align:center">Toca un elemento de cada columna</div></div>`;
+  }
+  app.innerHTML = `<div class="lesson">${head}<div class="lbody">${body}</div>${foot}</div>`;
+}
+function checkAnswer(){
+  const it = L.items[L.i]; if (it.type !== "mc" || L.sel === null || L.checked) return;
+  const q = it.q || QMAP[it.id], ok = it.opts[L.sel] === q.c, key = it.id || it.q.q;
+  L.checked = true;
+  if (!(key in L.firstTry)) {
+    L.firstTry[key] = ok;
+    if (!it.ai) grade(it.id, ok);
+    if (ok) { L.okFirst++; L.xp += 10; }
+  } else if (ok) L.xp += 5;
+  if (ok) { L.combo++; L.maxCombo = Math.max(L.maxCombo, L.combo); beep("ok"); }
+  else {
+    L.combo = 0; beep("ko");
+    L.items.push({type:"mc", id:it.id, q:it.q, ai:it.ai, opts: shuffle(it.opts)}); // vuelve al final
+    if (L.hearts !== null) L.hearts--;
+  }
+  render();
+}
+function nextItem(){
+  L.i++; L.sel = null; L.checked = false; L.ai = ""; L.aiBusy = false;
+  if (L.hearts !== null && L.hearts <= 0) return finishLesson(true);
+  if (L.i >= L.items.length) return finishLesson(false);
+  render(); window.scrollTo(0, 0);
+}
+function tapTile(side, i){
+  const it = L.items[L.i]; if (it.done.has(i)) return;
+  if (!it.sel || it.sel.side === side) { it.sel = {side, i}; return render(); }
+  if (it.sel.i === i) { it.done.add(i); it.sel = null; beep("ok"); if (it.done.size === it.pairs.length) { L.xp += it.miss ? 5 : 10; if (!it.miss) L.okFirst++; } render(); }
+  else {
+    it.miss++; it.sel = null; beep("ko");
+    if (L.hearts !== null) { L.hearts--; if (L.hearts <= 0) return finishLesson(true); }
+    render();
+    const el = document.querySelector(`.tile[data-side="${side}"][data-i="${i}"]`); if (el) { el.classList.add("shake"); setTimeout(() => el.classList.remove("shake"), 400); }
+  }
+}
+function finishLesson(outOfHearts){
+  const perfect = !outOfHearts && L.okFirst === L.total;
+  let xp = L.xp + (perfect ? 5 : 0);
+  if (outOfHearts) xp = Math.round(xp / 2);
+  const wasGoal = todayXP() >= state.goal;
+  addXP(xp);
+  if (L.kind === "lesson" && !outOfHearts) { const u = state.units[L.unit.id] || {lvl:0}; u.lvl = Math.min(5, (u.lvl || 0) + 1); u.seen = true; state.units[L.unit.id] = u; }
+  save();
+  const secs = Math.round((Date.now() - L.start) / 1000), acc = Math.round(L.okFirst / L.total * 100);
+  const goalNow = !wasGoal && todayXP() >= state.goal;
+  const R = {xp, acc, secs, perfect, outOfHearts, goalNow, kind:L.kind, unit:L.unit};
+  L = null; document.body.classList.add("in-lesson");
+  const app = $("#app");
+  app.innerHTML = `<div class="result">${mascot(outOfHearts ? "sad" : perfect ? "wow" : "happy")}
+    <h1>${outOfHearts ? "Te quedaste sin vidas" : perfect ? "¡Lección perfecta!" : "¡Lección completada!"}</h1>
+    <p class="muted">${outOfHearts ? "No pasa nada: repasa la chuleta y vuelve a intentarlo. Equivocarse aquí es como se aprende." : goalNow ? "¡Y has cumplido tu meta diaria!" : `Racha: ${liveStreak()} ${liveStreak() === 1 ? "día" : "días"}. Cada día cuenta.`}</p>
+    <div class="tiles"><div class="tile-s"><span>XP</span><b class="num" style="color:var(--warn)">+${xp}</b></div><div class="tile-s"><span>Precisión</span><b class="num" style="color:var(--ok)">${acc}%</b></div><div class="tile-s"><span>Tiempo</span><b class="num" style="color:var(--accent)">${Math.floor(secs/60)}:${String(secs%60).padStart(2,"0")}</b></div></div>
+    <div class="stack"><button class="btn block" data-act="again" data-kind="${R.kind}" data-u="${R.unit ? R.unit.id : ""}">Otra más (3 min)</button><button class="btn ghost block" data-act="home">Volver al inicio</button></div></div>`;
+  if (!outOfHearts) { beep("done"); confetti(); }
+  updateTop();
+}
+
+/* IA: explicación sencilla y lecciones extra */
+function mdLite(t){ return esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\n+/g, "<br>"); }
+async function explainAI(){
+  const it = L.items[L.i], q = it.q || QMAP[it.id], myL = L;
+  L.aiBusy = true; render();
+  const prompt = `Eres un tutor amable que prepara la oposición TAI (Técnico Auxiliar de Informática de la Administración del Estado, España). Explica en español, con frases muy cortas y lenguaje sencillo, pensando en una persona con TDAH: por qué la respuesta correcta es la indicada. Máximo 70 palabras. Termina con una línea que empiece por **Truco:** con una regla mnemotécnica. Sin títulos ni listas.\n\nPregunta: ${q.q}\nRespuesta correcta: ${q.c}\nOpciones incorrectas: ${q.w.join(" | ")}\nExplicación oficial: ${q.e}`;
+  try {
+    await sampleFn(prompt, {modelTier:"quick", onText: ({text}) => { if (L === myL) { L.ai = mdLite(text); const box = document.querySelector(".foot .ai"); if (box) box.innerHTML = L.ai; else render(); } }})
+      .then(r => { if (L === myL) { L.ai = mdLite(r.text); L.aiBusy = false; render(); } });
+  } catch(e) {
+    if (L === myL) { L.aiBusy = false; L.ai = e && e.code === "rate_limited" ? "Demasiadas peticiones seguidas. Prueba en un minuto." : "No he podido generar la explicación ahora."; render(); }
+  }
+}
+async function aiLesson(uid){
+  const u = UMAP[uid];
+  showModal(`<div class="stack" style="text-align:center">${mascot("happy")}<h2>Preparando tu lección…</h2><p class="muted">Estoy creando 5 preguntas nuevas sobre «${esc(u.t)}».</p></div>`);
+  const prompt = `Crea 5 preguntas tipo test NUEVAS, del nivel del examen de la oposición TAI (Técnico Auxiliar de Informática, Administración General del Estado, España), sobre el tema «${u.t}». Contexto del tema: ${u.cards.map(c => c.l.join(" ")).join(" ")}\nNo repitas estas preguntas: ${u.q.map(r => r[0]).join(" | ")}\nSolo datos que sean ciertos con la normativa y la técnica vigentes; si dudas de un dato, no lo uses. Responde SOLO con un array JSON: [{"q":"enunciado","c":"respuesta correcta","w":["incorrecta 1","incorrecta 2","incorrecta 3"],"e":"explicación de una frase"}]`;
+  try {
+    let data = await sampleFn.json(prompt, {modelTier:"default"});
+    if (data && !Array.isArray(data) && Array.isArray(data.preguntas)) data = data.preguntas;
+    const items = (Array.isArray(data) ? data : []).filter(x => x && typeof x.q === "string" && typeof x.c === "string" && Array.isArray(x.w) && x.w.length >= 3).slice(0, 5)
+      .map(x => { const q = {q:x.q, c:x.c, w:x.w.slice(0,3).map(String), e:String(x.e || ""), b:u.b}; return {type:"mc", q, ai:true, opts: shuffle([q.c, ...q.w])}; });
+    if (!items.length) throw new Error("vacío");
+    startLesson("ai", {unit: uid, items});
+  } catch(e) {
+    showModal(`<div class="stack"><h2>No se pudo crear la lección</h2><p class="muted">${e && e.code === "rate_limited" ? "Hay demasiadas peticiones ahora mismo. Inténtalo en un rato." : "La IA no ha devuelto preguntas válidas. Puedes intentarlo otra vez."}</p><button class="btn block" data-act="closeModal">Vale</button></div>`);
+  }
+}
+
+/* ---------------- Repaso ---------------- */
+function renderReview(app){
+  const due = dueIds(), seen = ALLQ.filter(id => state.q[id]).length;
+  const weak = ALLQ.filter(id => state.q[id] && state.q[id].ko > 0).sort((a, b) => state.q[b].ko - state.q[a].ko).slice(0, 5);
+  app.innerHTML = `<div class="stack">
+    <h1>Repaso inteligente</h1>
+    <p class="muted" style="margin:0">Las preguntas que fallas vuelven pronto; las que aciertas se espacian (1, 3, 7, 16 y 35 días). Así se fija la memoria a largo plazo sin estudiar de más.</p>
+    <div class="card stack"><div class="row" style="justify-content:space-between"><div><b class="num" style="font-size:2rem;font-family:var(--display)">${due.length}</b><div class="muted small">pendientes hoy</div></div><div><b class="num" style="font-size:2rem;font-family:var(--display)">${mastered()}</b><div class="muted small">dominadas</div></div><div><b class="num" style="font-size:2rem;font-family:var(--display)">${seen}/${ALLQ.length}</b><div class="muted small">vistas</div></div></div>
+      <button class="btn block" data-act="review" ${seen ? "" : "disabled"}>${due.length ? "Repasar ahora" : "Repaso libre"}</button>
+      <button class="btn ghost block" data-act="reviewQuick" ${seen ? "" : "disabled"}>Repaso exprés (3 preguntas)</button></div>
+    ${weak.length ? `<div class="card"><h3>Tus puntos débiles</h3><table><tbody>${weak.map(id => `<tr><td>${esc(QMAP[id].q)}</td><td class="num" style="color:var(--ko);white-space:nowrap">${state.q[id].ko} fallo${state.q[id].ko > 1 ? "s" : ""}</td></tr>`).join("")}</tbody></table></div>` : ""}
+    <div class="card"><h3>Chuletas de todas las unidades</h3><div class="stack" style="margin-top:10px">${UNITS.map(u => `<button class="opt" data-act="cheat" data-u="${u.id}"><span class="k" style="width:auto;padding:0 6px">${esc(u.code)}</span><span>${esc(u.t)}</span></button>`).join("")}</div></div>
+  </div>`;
+}
+
+/* ---------------- Simulacro ---------------- */
+function renderSim(app){
+  if (!SIM) {
+    const last = state.sims.slice(-1)[0];
+    app.innerHTML = `<div class="stack"><h1>Simulacro de examen</h1>
+      <div class="card stack"><p style="margin:0">El examen real del TAI es un <b>ejercicio único de 120 minutos</b>: 80 preguntas de test sobre el temario y un supuesto práctico de 20 preguntas (eliges bloque III o IV). Cada error <b>resta un tercio</b> de acierto y las preguntas en blanco no restan.</p>
+      <p class="muted small" style="margin:0">Aquí practicas el formato: sin ayudas, con tiempo (72 segundos por pregunta) y con la misma penalización.</p></div>
+      <div class="stack"><button class="btn block" data-act="simStart" data-n="20">Mini simulacro · 20 preguntas · 24 min</button>
+      <button class="btn ghost block" data-act="simStart" data-n="40">Medio · 40 preguntas · 48 min</button>
+      <button class="btn ghost block" data-act="simStart" data-n="80">Parte de test completa · 80 preguntas · 96 min</button></div>
+      ${last ? `<div class="card"><b>Último simulacro:</b> <span class="num">${last.nota.toFixed(2)}</span>/10 (${last.n} preguntas, ${last.date})</div>` : ""}
+      <p class="note">Consejo de examen: si dudas entre más de dos opciones, déjala en blanco. Si puedes descartar dos, contestar compensa de media.</p></div>`;
+    return;
+  }
+  if (SIM.done) return renderSimResult(app);
+  const q = QMAP[SIM.ids[SIM.i]], left = Math.max(0, Math.ceil((SIM.end - Date.now()) / 1000)), b = blockOf(q.b);
+  const answered = SIM.ans.filter(a => a !== null).length;
+  app.innerHTML = `<div class="lesson"><div class="lhead"><button class="x" data-act="simQuit" aria-label="Abandonar simulacro">${ICON.close}</button><div class="bar"><i style="width:${Math.round(SIM.i / SIM.ids.length * 100)}%;background:var(--accent)"></i></div><span class="chip timer num" id="simClock">${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}</span></div>
+    <div class="lbody"><div class="qkind"><span class="tag" style="background:${b.color}">${b.short}</span> Pregunta ${SIM.i + 1} de ${SIM.ids.length} · ${answered} respondidas</div>
+    <div class="qtext">${esc(q.q)}</div>
+    <div class="opts">${SIM.opts[SIM.i].map((o, k) => `<button class="opt" data-act="simPick" data-k="${k}" aria-pressed="${SIM.ans[SIM.i] === k}"><span class="k">${"ABCD"[k]}</span><span>${esc(o)}</span></button>`).join("")}</div></div>
+    <div class="foot"><div class="row" style="justify-content:space-between;flex-wrap:nowrap">
+      <button class="btn ghost sm" data-act="simPrev" ${SIM.i === 0 ? "disabled" : ""}>Anterior</button>
+      <button class="link" data-act="simBlank">${SIM.ans[SIM.i] === null ? "Dejar en blanco" : "Borrar respuesta"}</button>
+      ${SIM.i < SIM.ids.length - 1 ? `<button class="btn sm" data-act="simNext">Siguiente</button>` : `<button class="btn okb sm" data-act="simFinish">Entregar</button>`}
+    </div></div></div>`;
+}
+function startSim(n){
+  const per = {1:0.3, 2:0.15, 3:0.3, 4:0.25}; let ids = [];
+  BLOCKS.forEach(b => { const pool = shuffle(ALLQ.filter(id => QMAP[id].b === b.id)); ids.push(...pool.slice(0, Math.round(n * per[b.id]))); });
+  const rest = shuffle(ALLQ.filter(id => !ids.includes(id))); while (ids.length < n && rest.length) ids.push(rest.pop());
+  ids = shuffle(ids.slice(0, n));
+  SIM = {ids, opts: ids.map(id => shuffle([QMAP[id].c, ...QMAP[id].w])), ans: ids.map(() => null), i:0, end: Date.now() + n * 72 * 1000, done:false, timer:null};
+  SIM.timer = setInterval(() => { if (!SIM || SIM.done) return clearInterval(SIM && SIM.timer); const left = Math.max(0, Math.ceil((SIM.end - Date.now()) / 1000)); const c = $("#simClock"); if (c) c.textContent = `${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}`; if (left <= 0) { toast("¡Tiempo! Se entrega el simulacro."); finishSim(); } }, 1000);
+  render();
+}
+function finishSim(){
+  clearInterval(SIM.timer); SIM.done = true;
+  let A = 0, E = 0, B = 0;
+  SIM.ids.forEach((id, i) => { const a = SIM.ans[i]; if (a === null) B++; else { const ok = SIM.opts[i][a] === QMAP[id].c; ok ? A++ : E++; grade(id, ok); } });
+  const neta = A - E / 3, nota = Math.max(0, neta / SIM.ids.length * 10);
+  SIM.res = {A, E, B, neta, nota};
+  state.sims.push({date: today(), n: SIM.ids.length, A, E, B, nota: Math.round(nota * 100) / 100});
+  state.sims = state.sims.slice(-30);
+  addXP(Math.round(A * 2)); save(); beep("done"); if (nota >= 5) confetti();
+  render(); window.scrollTo(0, 0);
+}
+function renderSimResult(app){
+  const r = SIM.res, n = SIM.ids.length;
+  const wrong = SIM.ids.map((id, i) => ({id, i})).filter(x => SIM.ans[x.i] !== null && SIM.opts[x.i][SIM.ans[x.i]] !== QMAP[x.id].c);
+  app.innerHTML = `<div class="stack"><div class="result" style="padding-top:0">${mascot(r.nota >= 5 ? "wow" : "happy")}<h1 class="num">${r.nota.toFixed(2)} / 10</h1><p class="muted">Puntuación neta: ${r.neta.toFixed(2)} de ${n} (aciertos − errores ÷ 3)</p></div>
+    <div class="tiles" style="margin:0"><div class="tile-s"><span>Aciertos</span><b class="num" style="color:var(--ok)">${r.A}</b></div><div class="tile-s"><span>Errores</span><b class="num" style="color:var(--ko)">${r.E}</b></div><div class="tile-s"><span>En blanco</span><b class="num">${r.B}</b></div></div>
+    ${wrong.length ? `<div class="card"><h3>Revisa tus fallos</h3><div class="stack" style="margin-top:10px">${wrong.map(x => { const q = QMAP[x.id]; return `<div><b>${esc(q.q)}</b><div class="small" style="color:var(--ko)">Tu respuesta: ${esc(SIM.opts[x.i][SIM.ans[x.i]])}</div><div class="small" style="color:var(--ok)">Correcta: ${esc(q.c)}</div><div class="small muted">${esc(q.e)}</div></div>`; }).join("")}</div><p class="note">Estas preguntas se han añadido a tu repaso inteligente.</p></div>` : ""}
+    <button class="btn block" data-act="simReset">Hacer otro simulacro</button><button class="btn ghost block" data-act="home">Volver al inicio</button></div>`;
+}
+
+/* ---------------- Progreso ---------------- */
+function renderStats(app){
+  const t = dayNum(); let cells = "";
+  const startD = t - 27 - ((new Date(fromDayNum(t - 27) + "T12:00:00").getDay() + 6) % 7);
+  for (let d = startD; d <= t; d++) { const x = state.days[fromDayNum(d)] || 0; const l = x === 0 ? "" : x < state.goal / 2 ? "l1" : x < state.goal ? "l2" : "l3"; cells += `<i class="${l}${d === t ? " today" : ""}" title="${fromDayNum(d)}: ${x} XP"></i>`; }
+  const totalOk = ALLQ.reduce((a, id) => a + ((state.q[id] || {}).ok || 0), 0), totalKo = ALLQ.reduce((a, id) => a + ((state.q[id] || {}).ko || 0), 0);
+  app.innerHTML = `<div class="stack"><h1>Tu progreso</h1>
+    <div class="statgrid">
+      <div class="card"><b class="num" style="font-size:1.8rem;font-family:var(--display);color:var(--flame)">${liveStreak()}</b><div class="muted small">días de racha (mejor: ${state.best})</div></div>
+      <div class="card"><b class="num" style="font-size:1.8rem;font-family:var(--display);color:var(--warn)">${state.xp}</b><div class="muted small">XP totales</div></div>
+      <div class="card"><b class="num" style="font-size:1.8rem;font-family:var(--display);color:var(--ok)">${mastered()}</b><div class="muted small">preguntas dominadas de ${ALLQ.length}</div></div>
+      <div class="card"><b class="num" style="font-size:1.8rem;font-family:var(--display);color:var(--accent)">${totalOk + totalKo ? Math.round(totalOk / (totalOk + totalKo) * 100) + "%" : "—"}</b><div class="muted small">acierto global</div></div>
+    </div>
+    <div class="card"><h3>Últimas 4 semanas</h3><div class="row muted small" style="justify-content:space-between;margin:8px 0 6px"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div><div class="heat">${cells}</div><p class="muted small" style="margin:10px 0 0">Verde intenso = meta diaria cumplida.</p></div>
+    <div class="card stack"><h3>Acierto por bloque</h3>${BLOCKS.map(b => { const a = blockAcc(b.id); return `<div class="bline"><span>${b.short}</span><div class="bar"><i style="width:${a.pct || 0}%;background:${b.color}"></i></div><span class="num">${a.pct === null ? "—" : a.pct + "%"}</span></div>`; }).join("")}</div>
+    <div class="card stack"><h3>Dominio por unidad</h3>${UNITS.map(u => `<div class="bline"><span class="small" title="${esc(u.t)}">${esc(u.code)}</span><div class="bar"><i style="width:${unitProgress(u)}%;background:${blockOf(u.b).color}"></i></div><span class="num small">${unitProgress(u)}%</span></div>`).join("")}</div>
+    ${state.sims.length ? `<div class="card"><h3>Simulacros</h3><table><thead><tr><th>Fecha</th><th>Preg.</th><th>A/E/B</th><th>Nota</th></tr></thead><tbody>${state.sims.slice().reverse().map(s => `<tr class="num"><td>${s.date}</td><td>${s.n}</td><td>${s.A}/${s.E}/${s.B}</td><td><b style="color:${s.nota >= 5 ? "var(--ok)" : "var(--ko)"}">${s.nota.toFixed(2)}</b></td></tr>`).join("")}</tbody></table></div>` : ""}
+  </div>`;
+}
+
+/* ---------------- Ajustes ---------------- */
+function seg(key, opts){ return `<div class="seg" role="group">${opts.map(([v, l]) => `<button data-act="set" data-k="${key}" data-v="${v}" aria-pressed="${String(state.settings[key]) === String(v)}">${l}</button>`).join("")}</div>`; }
+function renderSettings(app){
+  const s = state.settings;
+  app.innerHTML = `<div class="stack"><h1>Ajustes</h1>
+    <div class="card"><h3>Ritmo</h3>
+      <div class="set"><label>Meta diaria</label><div class="seg" role="group">${[[10,"Suave"],[30,"Normal"],[60,"Intensa"],[100,"Máxima"]].map(([v,l]) => `<button data-act="goal" data-v="${v}" aria-pressed="${state.goal === v}">${l} · ${v}</button>`).join("")}</div></div>
+      <div class="set"><label for="sHearts">Modo vidas (5 fallos por lección)<div class="muted small">Desactivado = sin presión</div></label><input type="checkbox" class="switch" id="sHearts" data-act="toggle" data-k="hearts" ${s.hearts ? "checked" : ""}></div>
+      <div class="set"><label for="sSound">Sonidos de acierto y error</label><input type="checkbox" class="switch" id="sSound" data-act="toggle" data-k="sound" ${s.sound ? "checked" : ""}></div>
+    </div>
+    <div class="card"><h3>Lectura y concentración</h3>
+      <div class="set"><label>Tipo de letra</label>${seg("font", [["lexend","Lexend"],["atkinson","Hiperlegible"],["system","Sistema"]])}</div>
+      <div class="set"><label>Tamaño del texto</label>${seg("size", [[15,"A−"],[17,"A"],[20,"A+"],[23,"A++"]])}</div>
+      <div class="set"><label for="sCalm">Modo calma<div class="muted small">Sin animaciones ni confeti</div></label><input type="checkbox" class="switch" id="sCalm" data-act="toggle" data-k="calm" ${s.calm ? "checked" : ""}></div>
+      <div class="set"><label>Tema</label>${seg("theme", [["auto","Auto"],["light","Claro"],["dark","Oscuro"]])}</div>
+    </div>
+    <div class="card stack"><h3>Tu progreso</h3>
+      <p class="muted small" style="margin:0">${syncState === "ok" ? "Tu progreso se guarda en tu cuenta y se sincroniza entre el móvil y el ordenador." : "Tu progreso se guarda en este dispositivo. Abre la app con tu cuenta para sincronizarlo, o copia una copia de seguridad."}</p>
+      <div class="row"><button class="btn ghost sm" data-act="export">Copiar copia de seguridad</button><button class="btn ghost sm" data-act="importOpen">Restaurar copia</button></div>
+      <button class="link" style="align-self:flex-start;color:var(--ko)" data-act="resetAsk">Borrar todo el progreso</button>
+    </div>
+    <p class="note">PasoTAI es una herramienta de estudio personal. El contenido se apoya en el programa oficial del cuerpo de Técnicos Auxiliares de Informática de la AGE y en la normativa vigente; ante cualquier duda, manda el BOE.</p></div>`;
+}
+
+/* =====================================================================
+   EVENTOS
+   ===================================================================== */
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-go]"); if (g) { closeModal(); return go(g.dataset.go); }
+  const el = e.target.closest("[data-act]"); if (!el) return;
+  const a = el.dataset.act;
+  if (a === "scrim") { if (e.target === el) closeModal(); return; }
+  switch (a) {
+    case "closeModal": closeModal(); break;
+    case "focus": toggleFocus(); break;
+    case "unit": openUnit(el.dataset.u); break;
+    case "startUnit": startLesson("lesson", {unit: el.dataset.u}); break;
+    case "cheat": { const u = UMAP[el.dataset.u]; showModal(`<div class="stack">${cheatHTML(u)}<button class="btn block" data-act="startUnit" data-u="${u.id}">Practicar esta unidad</button><button class="link" data-act="closeModal">Cerrar</button></div>`); break; }
+    case "aiLesson": aiLesson(el.dataset.u); break;
+    case "today": { if (dueIds().length >= 3) startLesson("review"); else startLesson("lesson", {unit: nextUnit().id}); break; }
+    case "quick": { if (dueIds().length) startLesson("review", {quick:true}); else startLesson("lesson", {unit: nextUnit().id, quick:true}); break; }
+    case "review": startLesson("review"); break;
+    case "reviewQuick": startLesson("review", {quick:true}); break;
+    case "cheatDone": L.cheat = false; if (L.unit) { state.units[L.unit.id] = Object.assign(state.units[L.unit.id] || {lvl:0}, {seen:true}); save(); } render(); break;
+    case "quit": showModal(`<div class="stack" style="text-align:center">${mascot("sad")}<h2>¿Seguro que quieres salir?</h2><p class="muted">Si sales ahora perderás el progreso de esta lección. ¡Te queda poco!</p><button class="btn block" data-act="closeModal">Seguir aprendiendo</button><button class="link" style="color:var(--ko)" data-act="quitYes">Salir</button></div>`); break;
+    case "quitYes": closeModal(); go("home"); break;
+    case "pick": if (L && !L.checked) { L.sel = +el.dataset.k; render(); } break;
+    case "check": checkAnswer(); break;
+    case "next": nextItem(); break;
+    case "explain": explainAI(); break;
+    case "tile": tapTile(el.dataset.side, +el.dataset.i); break;
+    case "again": { const k = el.dataset.kind; if (k === "lesson" && el.dataset.u) startLesson("lesson", {unit: el.dataset.u}); else if (k === "review") startLesson("review"); else startLesson("lesson", {unit: nextUnit().id}); break; }
+    case "home": go("home"); break;
+    case "simStart": startSim(+el.dataset.n); break;
+    case "simPick": SIM.ans[SIM.i] = +el.dataset.k; render(); break;
+    case "simBlank": SIM.ans[SIM.i] = null; render(); break;
+    case "simNext": SIM.i = Math.min(SIM.ids.length - 1, SIM.i + 1); render(); window.scrollTo(0,0); break;
+    case "simPrev": SIM.i = Math.max(0, SIM.i - 1); render(); break;
+    case "simFinish": { const blank = SIM.ans.filter(x => x === null).length; showModal(`<div class="stack"><h2>¿Entregar el simulacro?</h2><p class="muted">${blank ? `Tienes ${blank} pregunta${blank > 1 ? "s" : ""} en blanco (no restan).` : "Has respondido todas las preguntas."}</p><button class="btn block" data-act="simFinishYes">Entregar</button><button class="link" data-act="closeModal">Seguir revisando</button></div>`); break; }
+    case "simFinishYes": closeModal(); finishSim(); break;
+    case "simQuit": showModal(`<div class="stack"><h2>¿Abandonar el simulacro?</h2><p class="muted">No se guardará ningún resultado.</p><button class="btn block" data-act="closeModal">Continuar el simulacro</button><button class="link" style="color:var(--ko)" data-act="simQuitYes">Abandonar</button></div>`); break;
+    case "simQuitYes": closeModal(); clearInterval(SIM.timer); SIM = null; render(); break;
+    case "simReset": SIM = null; render(); break;
+    case "goal": state.goal = +el.dataset.v; save(); render(); break;
+    case "set": { const k = el.dataset.k, v = el.dataset.v; state.settings[k] = k === "size" ? +v : v; applySettings(); save(); render(); break; }
+    case "export": { const txt = JSON.stringify(state); (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast("Copia de seguridad copiada. Pégala en una nota o un correo."), () => showModal(`<div class="stack"><h2>Copia de seguridad</h2><p class="muted small">Selecciona y copia este texto:</p><textarea readonly id="exportTxt">${esc(txt)}</textarea><button class="btn block" data-act="closeModal">Hecho</button></div>`)); break; }
+    case "importOpen": showModal(`<div class="stack"><h2>Restaurar copia</h2><p class="muted small">Pega aquí el texto de tu copia de seguridad. Sustituirá el progreso actual.</p><textarea id="importTxt" aria-label="Copia de seguridad"></textarea><button class="btn block" data-act="importDo">Restaurar</button><button class="link" data-act="closeModal">Cancelar</button></div>`); break;
+    case "importDo": { try { const s = JSON.parse($("#importTxt").value); if (!s || typeof s !== "object" || !("xp" in s)) throw 0; state = migrate(s); applySettings(); save(); closeModal(); toast("Progreso restaurado"); render(); } catch(err) { toast("Ese texto no es una copia válida de PasoTAI"); } break; }
+    case "resetAsk": showModal(`<div class="stack"><h2>¿Borrar todo el progreso?</h2><p class="muted">Se perderán XP, racha, repasos y simulacros. No se puede deshacer.</p><button class="btn kob block" data-act="resetYes">Sí, borrar todo</button><button class="link" data-act="closeModal">Cancelar</button></div>`); break;
+    case "resetYes": { const st = state.settings; state = fresh(); state.settings = st; save(); closeModal(); toast("Progreso borrado"); go("home"); break; }
+  }
+});
+document.addEventListener("change", e => {
+  const el = e.target.closest('[data-act="toggle"]'); if (!el) return;
+  state.settings[el.dataset.k] = el.checked; applySettings(); save();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && $("#modal").innerHTML) return closeModal();
+  if (e.target.tagName === "TEXTAREA" || $("#modal").innerHTML) return;
+  if (L && !L.cheat) {
+    const it = L.items[L.i];
+    if (it.type === "mc" && !L.checked && /^[1-4]$/.test(e.key) && +e.key <= it.opts.length) { L.sel = +e.key - 1; render(); }
+    else if (e.key === "Enter") { e.preventDefault(); if (it.type === "mc" && !L.checked) checkAnswer(); else if (L.checked || (it.type === "match" && it.done.size === it.pairs.length)) nextItem(); }
+  } else if (L && L.cheat && e.key === "Enter") { e.preventDefault(); L.cheat = false; render(); }
+  else if (SIM && !SIM.done && view === "sim") {
+    const k = {"1":0,"2":1,"3":2,"4":3,"a":0,"b":1,"c":2,"d":3}[e.key.toLowerCase()];
+    if (k !== undefined) { SIM.ans[SIM.i] = k; render(); }
+    else if (e.key === "ArrowRight" || e.key === "Enter") { if (SIM.i < SIM.ids.length - 1) { SIM.i++; render(); } }
+    else if (e.key === "ArrowLeft") { SIM.i = Math.max(0, SIM.i - 1); render(); }
+  }
+});
+
+applySettings();
+if (state.lastDay && dayNum() - dayNum(state.lastDay) > 1 && state.streak) { state.streak = 0; }
+render();
+</script>
+</body>
+</html>
